@@ -24,9 +24,9 @@ mingw32-make
 
 # ==== Execute ====
 # Linux
-./hexmap >> output
+./hexmap > output
 # Windows
-./hexmap.exe >> output
+./hexmap.exe > output
 
 # ==== Visuzalize ====
 python3 visualize_hexmap.py

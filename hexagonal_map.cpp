@@ -64,7 +64,8 @@ int main(){
 
     int N;
 
-    cin >> N;
+    cerr << "Type map radius (N): "; 
+    if (!(cin >> N)) return 0;
 
     unordered_set<Hex> hex_map;
     
