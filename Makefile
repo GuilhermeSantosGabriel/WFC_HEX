@@ -7,7 +7,10 @@ CXXFLAGS = -std=c++17 -O2 -Wall
 TARGET = hexmap
 
 # Source files
-SRC = hex.cpp hexagonal_map.cpp
+SRC = hex.cpp hexagonal_map.cpp wave_function_collapse.cpp
+
+wfc: wave_function_collapse.cpp hex.cpp cell.cpp
+	$(CXX) $(CXXFLAGS) -o wfc wave_function_collapse.cpp hex.cpp cell.cpp
 
 # Build rule
 $(TARGET): $(SRC)
@@ -16,3 +19,4 @@ $(TARGET): $(SRC)
 # Clean rule
 clean:
 	rm -f $(TARGET) *.o
+

@@ -9,11 +9,30 @@ hex_radius = int(input())
 
 file = open("output", "r")
 
+#0 -> GRASS,
+#1 -> FOREST,
+#2 -> WATER,
+#3 -> SAND
+
+
 for line in file.readlines():
-    x, y = line.split()
+    x, y, tile = line.split()
     x = int(float(x))
     y = int(float(y))
-    cv2.circle(map_image, (x, y), hex_radius, (0, 0, 255), -1)
+    tile = int(tile)
+
+    match tile:
+
+        case 0:
+            color = (124, 255, 124)
+        case 1:
+            color = (0, 255, 0)
+        case 2:
+            color = (255, 0, 0)
+        case 3:
+            color = (0, 255, 255)
+        
+    cv2.circle(map_image, (x, y), hex_radius, color, -1)
 
 cv2.imwrite("hexmap.png", map_image)
 
