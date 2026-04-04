@@ -44,3 +44,10 @@
 hexmap
 output
 *.png
+# Python Virtual Environment
+venv/
+
+# output
+output
+hexmap
+hexmap.png
