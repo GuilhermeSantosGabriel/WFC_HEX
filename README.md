@@ -7,29 +7,23 @@
 python3 -m venv venv
 
 # ==== Activate virtual environment ====
-# Linux
 source venv/bin/activate
-# Windows
-venv\Scripts\activate
+
+# ==== Download Python Libs ====
+pip install -r requirements.txt
 ```
 
 ## Execute
 
 ```bash
 # ==== Compile ====
-# Linux
 make
-# Windows
-mingw32-make
 
 # ==== Execute ====
-# Linux
-./hexmap > output
-# Windows
-./hexmap.exe > output
+./bin/wfc > bin/wfc_output
 
 # ==== Visuzalize ====
-python3 visualize_hexmap.py
+python3 scripts/visualize_hexmap.py
 ```
 
 ---
