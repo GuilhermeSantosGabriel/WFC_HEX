@@ -1,3 +1,6 @@
+# Vscode
+.vscode/
+
 # Prerequisites
 *.d
 
@@ -40,14 +43,9 @@
 # debug information files
 *.dwo
 
-# misc
-hexmap
-output
-*.png
 # Python Virtual Environment
 venv/
 
 # output
-output
-hexmap
+bin/
 hexmap.png
