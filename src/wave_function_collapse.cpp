@@ -150,7 +150,9 @@ const Orientation layout_flat
 
 
 int main() {
+
     int N;
+    cerr << "Type map radius (N): ";
     cin >> N;
 
     vector<Cell> hex_map;
