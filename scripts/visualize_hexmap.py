@@ -4,7 +4,7 @@ import numpy as np
 
 COLOR_MAP = {
     0: (124, 255, 124), # GRASS
-    1: (0, 255, 0),     # FOREST
+    1: (12, 87, 32),    # FOREST
     2: (255, 0, 0),     # WATER
     3: (0, 255, 255)    # SAND
 }
