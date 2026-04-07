@@ -1,5 +1,13 @@
+import sys
+
 import cv2
 import numpy as np
+
+try:
+    file = open("bin/wfc_output", "r")
+except Exception as e:
+    print(f"Failed to open 'bin/wfc_output': {e}")
+    sys.exit(-1)
 
 IMG_SIZE = (1000, 1000, 3)
 
@@ -7,7 +15,6 @@ map_image = np.zeros(IMG_SIZE, np.uint8)
 
 hex_radius = int(input("Type Hex Radius: "))
 
-file = open("output", "r")
 
 #0 -> GRASS,
 #1 -> FOREST,
@@ -34,5 +41,4 @@ for line in file.readlines():
         
     cv2.circle(map_image, (x, y), hex_radius, color, -1)
 
-cv2.imwrite("hexmap.png", map_image)
-
+    cv2.imwrite("hexmap.png", map_image)

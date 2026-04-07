@@ -1,22 +1,34 @@
 # Simple Makefile for hexagonal map project
 
 CXX = g++
-CXXFLAGS = -std=c++17 -O2 -Wall
+CXXFLAGS = -std=c++17 -O2 -Wall -Iinclude
 
-# Target executable
-TARGET = hexmap
+# Linker Libs - Order matters!
+# -lglfw: window management
+# -lGL: opengl core
+# -ldl: Necessário para o GLAD carregar funções em tempo de execução
+# -ldl: required to GLAD load funcs in execution time
+# -lpthread: system threads
+LIBS = -lglfw -lGL -ldl -lpthread -lX11 -lXrandr -lXi
 
-# Source files
-SRC = hex.cpp hexagonal_map.cpp wave_function_collapse.cpp
+# Paths
+SRC_DIR = src
+BIN_DIR = bin
 
-wfc: wave_function_collapse.cpp hex.cpp cell.cpp
-	$(CXX) $(CXXFLAGS) -o wfc wave_function_collapse.cpp hex.cpp cell.cpp
+# Source Files
+SRC = $(SRC_DIR)/wave_function_collapse.cpp \
+      $(SRC_DIR)/hex.cpp \
+      $(SRC_DIR)/cell.cpp \
+      $(SRC_DIR)/glad.c
 
-# Build rule
+# Main Target
+TARGET = $(BIN_DIR)/wfc
+
+all: $(TARGET)
+
 $(TARGET): $(SRC)
-	$(CXX) $(CXXFLAGS) -o $(TARGET) $(SRC)
+	@mkdir -p $(BIN_DIR)
+	$(CXX) $(CXXFLAGS) $^ -o $@ $(LIBS)
 
-# Clean rule
 clean:
-	rm -f $(TARGET) *.o
-
+	rm -rf $(BIN_DIR)
