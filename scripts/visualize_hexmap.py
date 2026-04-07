@@ -1,44 +1,42 @@
 import sys
-
 import cv2
 import numpy as np
 
+COLOR_MAP = {
+    0: (124, 255, 124), # GRASS
+    1: (0, 255, 0),     # FOREST
+    2: (255, 0, 0),     # WATER
+    3: (0, 255, 255)    # SAND
+}
+
 try:
-    file = open("bin/wfc_output", "r")
+    with open("bin/wfc_output", "r") as file:
+        lines = file.readlines()
 except Exception as e:
-    print(f"Failed to open 'bin/wfc_output': {e}")
+    print(f"Failed to open file: {e}")
     sys.exit(-1)
 
 IMG_SIZE = (1000, 1000, 3)
-
 map_image = np.zeros(IMG_SIZE, np.uint8)
 
-hex_radius = int(input("Type Hex Radius: "))
+try:
+    hex_radius = int(input("Type Hex Radius: "))
+except ValueError:
+    hex_radius = 5
 
-
-#0 -> GRASS,
-#1 -> FOREST,
-#2 -> WATER,
-#3 -> SAND
-
-
-for line in file.readlines():
-    x, y, tile = line.split()
-    x = int(float(x))
-    y = int(float(y))
-    tile = int(tile)
-
-    match tile:
-
-        case 0:
-            color = (124, 255, 124)
-        case 1:
-            color = (0, 255, 0)
-        case 2:
-            color = (255, 0, 0)
-        case 3:
-            color = (0, 255, 255)
+for line in lines:
+    try:
+        parts = line.split()
+        if len(parts) < 3: continue
         
-    cv2.circle(map_image, (x, y), hex_radius, color, -1)
+        x = int(float(parts[0]))
+        y = int(float(parts[1]))
+        tile = int(parts[2])
 
-    cv2.imwrite("hexmap.png", map_image)
+        color = COLOR_MAP.get(tile, (255, 255, 255))
+        
+        cv2.circle(map_image, (x, y), hex_radius, color, -1)
+    except Exception:
+        continue
+
+cv2.imwrite("hexmap.png", map_image)
