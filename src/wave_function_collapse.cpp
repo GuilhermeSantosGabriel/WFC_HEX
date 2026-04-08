@@ -11,12 +11,46 @@ enum TileTypes {
     SAND
 };
 
-const map<int, set<int>> ruleset = {
-    {GRASS, {GRASS, FOREST, WATER, SAND}},
-    {FOREST, {GRASS, FOREST}},
-    {WATER, {GRASS, WATER, SAND}},
-    {SAND, {GRASS, SAND, WATER}}
+
+/* Ruleset
+
+    TileType {
+        {Neighbor1: Weight1}, {Neighbor2: Weight2}, ...
+    }
+
+    The sum of Weights must be 10, min: 0, max: 10
+*/
+
+std::map<int, std::map<int, int>> ruleset = {
+
+    {WATER, {
+        {WATER, 4}, {SAND, 6},
+    }},
+
+    {SAND, {
+        {WATER, 1}, {SAND, 5}, {GRASS, 4}
+    }},
+
+    {GRASS, {
+        {SAND, 3}, {GRASS, 4}, {FOREST, 3}
+    }},
+
+    {FOREST, {
+        {GRASS, 3}, {FOREST, 7}
+    }}
 };
+
+void validate_rules(const std::map<int, std::map<int, int>>& rules) {
+    for (auto const& [tile, neighbors] : rules) {
+        int soma = 0;
+        for (auto const& [neighbor, weight] : neighbors) {
+            soma += weight;
+        }
+        if (soma != 10) {
+            std::cerr << "Error: Tile " << tile << " sums " << soma << " (expected 10)\n";
+        }
+    }
+}
 
 set<int> tiles = {GRASS, FOREST, WATER, SAND};
 
@@ -37,13 +71,33 @@ void fill_map(vector<Cell> &hex_map, int size, int n_tiles) {
 bool collapse(Cell &cell) {
     if (cell.possible_tiles.empty()) return false;
 
-    random_device rd;
-    mt19937 gen(rd());
-    uniform_int_distribution<> dis(0, cell.possible_tiles.size() - 1);
+    static std::random_device rd;
+    static std::mt19937 gen(rd());
 
-    auto it = cell.possible_tiles.begin();
-    advance(it, dis(gen));
-    int chosen_tile = *it;
+    int total_weight = 0;
+    std::map<int, int> current_weights;
+
+    for (int tile : cell.possible_tiles) {
+        int w = ruleset[tile][tile]; 
+        if (w == 0) w = 1;
+        
+        current_weights[tile] = w;
+        total_weight += w;
+    }
+
+    std::uniform_int_distribution<> dis(0, total_weight - 1);
+    int random_roll = dis(gen);
+
+    int chosen_tile = *cell.possible_tiles.begin();
+    int cumulative_sum = 0;
+
+    for (auto const& [tile, weight] : current_weights) {
+        cumulative_sum += weight;
+        if (random_roll < cumulative_sum) {
+            chosen_tile = tile;
+            break;
+        }
+    }
 
     cell.possible_tiles = {chosen_tile};
     cell.entropy = 1;
@@ -77,6 +131,9 @@ Cell* lowest_entropy_cell(vector<Cell> &hex_map) {
 }
 
 bool wave_function_collapse(vector<Cell> &hex_map, int size, int n_tiles) {
+
+    validate_rules(ruleset);
+
     fill_map(hex_map, size, n_tiles);
 
     // Build coordinate map for fast neighbor lookup
