@@ -7,15 +7,17 @@ class Hex
 {
 private:
     const int q, r, s;
+    int height;
 
 public:
     // Constructor
-    Hex(int q_s, int r_s, int s_s);
+    Hex(int q_s, int r_s, int s_s, int height_s);
 
     // Getters
     int get_q() const;
     int get_r() const;
     int get_s() const;
+    int get_height();
 
     // Operators
     Hex operator+(const Hex& other) const;
