@@ -37,11 +37,20 @@ static void validate_rules(const std::map<int, std::map<int, int>>& rules) {
 }
 
 static void fill_map(std::vector<Cell> &hex_map, int size, int n_tiles) {
+
+    static std::random_device rd;
+    static std::mt19937 gen(rd());
+
+    std::uniform_int_distribution<> dis(0, 20);
+
     for (int q = -size; q <= size; q++) {
         int r1 = std::max(-size, -q - size);
         int r2 = std::min(size, -q + size);
         for (int r = r1; r <= r2; r++) {
-            Cell h(q, r, -q - r, n_tiles, tiles);
+            
+            int random_height = dis(gen);
+
+            Cell h(q, r, -q - r, random_height, n_tiles, tiles);
             hex_map.push_back(h);
         }
     }
