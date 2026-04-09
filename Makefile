@@ -2,7 +2,7 @@
 
 CXX      := g++
 CC       := gcc
-CXXFLAGS := -std=c++17 -O2 -Wall
+CXXFLAGS := -std=c++17 -O0 -Wall
 LIBS     := -lglfw -lGL -ldl -lpthread -lX11 -lXrandr -lXi
 
 # Paths
