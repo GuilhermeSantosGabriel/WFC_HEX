@@ -19,6 +19,8 @@
     <img src="./img/ridged-multifractal-high-threshold.png" width="450" alt="High Threshold">
 </p>
 
+- Idea based on: [How does procedural generation work? | Bitwise](https://youtu.be/-POwgollFeY?si=I9FvStpswLwmnykC)
+
 # Height Rulset
 - Make a soft height transition between Cells
 
@@ -28,3 +30,5 @@
 <p align="center">
     <img src="./img/perlin_noise_example.png" width="500" alt="Perlin Noise Example">
 </p>
+
+- Idea based on: [How does procedural generation work? | Bitwise](https://youtu.be/-POwgollFeY?si=I9FvStpswLwmnykC)
