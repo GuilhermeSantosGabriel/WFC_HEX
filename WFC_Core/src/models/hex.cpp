@@ -1,4 +1,4 @@
-#include "hex.h"
+#include "models/hex.h"
 #include <cassert>
 
 /* ALL OF THESE FUNCTIONS WERE BASED ON https://www.redblobgames.com/grids/hexagons/implementation.html#map-optimized-storage */

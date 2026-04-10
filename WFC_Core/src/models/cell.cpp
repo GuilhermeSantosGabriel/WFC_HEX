@@ -1,4 +1,4 @@
-#include "cell.h"
+#include "models/cell.h"
 
 Cell::Cell(int q, int r, int s,
            int e,
