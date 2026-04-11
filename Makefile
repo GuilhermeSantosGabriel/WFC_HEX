@@ -2,7 +2,7 @@
 
 CXX      := g++
 CC       := gcc
-CXXFLAGS := -std=c++17 -O0 -Wall
+CXXFLAGS := -std=c++17 -O0 -Wall -g -MMD -MP
 LIBS     := -lglfw -lGL -ldl -lpthread -lX11 -lXrandr -lXi
 
 # Paths
@@ -14,23 +14,20 @@ OBJ_DIR  := obj
 INCLUDES := -I$(INC_DIR)
 
 # Source Files
-SRCS := $(SRC_DIR)/main.cpp \
-        $(SRC_DIR)/engine/wfc.cpp \
-        $(SRC_DIR)/engine/hex_to_pixels.cpp \
-        $(SRC_DIR)/models/cell.cpp \
-        $(SRC_DIR)/models/hex.cpp
+SRCS_CPP := $(shell find $(SRC_DIR) -name "*.cpp")
+SRCS_C   := $(shell find $(SRC_DIR) -name "*.c")
 
-GLAD_SRC := $(SRC_DIR)/external/glad.c
+OBJS := $(SRCS_CPP:$(SRC_DIR)/%.cpp=$(OBJ_DIR)/%.o) \
+        $(SRCS_C:$(SRC_DIR)/%.c=$(OBJ_DIR)/%.o)
 
-OBJS := $(SRCS:$(SRC_DIR)/%.cpp=$(OBJ_DIR)/%.o)
-GLAD_OBJ := $(OBJ_DIR)/external/glad.o
+DEPS := $(OBJS:.o=.d)
 
 # Main Target
 TARGET = $(BIN_DIR)/wfc
 
 all: $(TARGET)
 
-$(TARGET): $(OBJS) $(GLAD_OBJ)
+$(TARGET): $(OBJS)
 	@mkdir -p $(BIN_DIR)
 	$(CXX) $(CXXFLAGS) $^ -o $@ $(LIBS)
 	@echo "Built successfully: $(TARGET)"
@@ -39,9 +36,11 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
 	@mkdir -p $(dir $@)
 	$(CXX) $(CXXFLAGS) $(INCLUDES) -c $< -o $@
 
-$(GLAD_OBJ): $(GLAD_SRC)
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
 	@mkdir -p $(dir $@)
-	$(CC) -O2 $(INCLUDES) -c $< -o $@
+	$(CC) $(INCLUDES) -c $< -o $@
+
+-include $(DEPS)
 
 clean:
 	rm -rf $(BIN_DIR) $(OBJ_DIR)
