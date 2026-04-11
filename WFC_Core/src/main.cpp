@@ -19,6 +19,9 @@ int main() {
         //cout << "SUCCESS!!!" << endl;
         
         for (auto &c : hex_map){
+
+            c.set_height(cell_height(c));
+
             Point p = hex_to_pixel(layout, c);
             
             //cout << q << " " << r << " " << -q-r << endl;

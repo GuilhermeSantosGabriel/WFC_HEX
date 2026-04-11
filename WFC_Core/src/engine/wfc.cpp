@@ -6,6 +6,7 @@
 #include <random>
 #include <algorithm>
 #include <tuple>
+#include <cassert>
 
 std::map<int, std::map<int, int>> ruleset = {
 
@@ -39,19 +40,12 @@ static void validate_rules(const std::map<int, std::map<int, int>>& rules) {
 
 static void fill_map(std::vector<Cell> &hex_map, int size, int n_tiles) {
 
-    static std::random_device rd;
-    static std::mt19937 gen(rd());
-
-    std::uniform_int_distribution<> dis(0, 20);
-
     for (int q = -size; q <= size; q++) {
         int r1 = std::max(-size, -q - size);
         int r2 = std::min(size, -q + size);
         for (int r = r1; r <= r2; r++) {
 
-            float frequency = 0.1f;
-            int height = (int)(normalized_perlin(q, r, frequency) * 100.0f);
-            Cell h(q, r, -q - r, height, n_tiles, tiles);
+            Cell h(q, r, -q - r, 0, n_tiles, tiles);
 
             hex_map.push_back(h);
         }
@@ -144,4 +138,42 @@ bool wave_function_collapse(std::vector<Cell> &hex_map, int size, int n_tiles) {
         }
     }
     return true;
+}
+
+int cell_height(Cell hex_cell) {
+
+    assert(hex_cell.collapsed);
+
+    int tile_type = *hex_cell.possible_tiles.begin();
+
+    float amplitude = 0.0f;
+    switch (tile_type) {
+        case WATER:
+            amplitude = 0.0f;
+        break;
+
+        case SAND:
+            amplitude = 15.0f;
+        break;
+
+        case GRASS:
+            amplitude = 30.0f;
+        break;
+
+        case FOREST:
+            amplitude = 50.0f;
+        break;
+
+        default:
+            amplitude = 0.0f;
+    }
+
+    float frequency = 0.1f;
+    int height = (int)(amplitude * normalized_perlin(
+        hex_cell.get_q(),
+        hex_cell.get_r(),
+        frequency
+    ));
+
+    return height;
 }

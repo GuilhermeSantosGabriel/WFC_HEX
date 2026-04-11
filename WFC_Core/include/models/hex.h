@@ -21,6 +21,9 @@ public:
     int get_s() const;
     int get_height();
 
+    // Setters
+    void set_height(int height_s);
+
     // Operators
     Hex operator+(const Hex& other) const;
     Hex operator-(const Hex& other) const;
