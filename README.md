@@ -37,3 +37,4 @@ python3 scripts/visualize_hexmap.py
 - https://www.redblobgames.com/grids/hexagons/#coordinates
 - https://www.youtube.com/watch?v=rI_y2GAlQFM&t=564s
 - https://blog.ptidej.net/procedural-generation-using-wave-function-collapse/
+- [How does procedural generation work? | Bitwise - Youtube](https://youtu.be/-POwgollFeY?si=I9FvStpswLwmnykC)

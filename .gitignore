@@ -50,3 +50,4 @@ venv/
 bin/
 obj/
 hexmap.png
+isometric_hexmap.png

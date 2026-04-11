@@ -27,11 +27,12 @@ except ValueError:
 for line in lines:
     try:
         parts = line.split()
-        if len(parts) < 3: continue
+        if len(parts) < 4: continue
         
         x = int(float(parts[0]))
         y = int(float(parts[1]))
-        tile = int(parts[2])
+        height = int (float(parts[2]))
+        tile = int(parts[3])
 
         color = COLOR_MAP.get(tile, (255, 255, 255))
         

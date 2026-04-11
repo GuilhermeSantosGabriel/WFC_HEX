@@ -23,7 +23,7 @@ int main() {
             Point p = hex_to_pixel(layout, c);
             
             //cout << q << " " << r << " " << -q-r << endl;
-            cout << p.x << " " << p.y << " " << *c.possible_tiles.begin() << endl;;
+            cout << p.x << " " << p.y << " " << c.get_height() << " " << *c.possible_tiles.begin() << endl;;
         }
         
     } else {

@@ -11,9 +11,9 @@ public:
     bool collapsed;
 
     // Constructor
-    Cell(int q, int r, int s,
+    Cell(int q, int r, int s, int height,
          int e,
          const std::set<int>& t);
 };
 
-#endif // CELL_H
+#endif
