@@ -15,7 +15,6 @@ int main() {
     vector<Cell> hex_map;
     Layout layout(layout_flat, Point(5,5), Point(500, 500));
 
-
     if (wave_function_collapse(hex_map, N, tiles.size())) {
         //cout << "SUCCESS!!!" << endl;
         

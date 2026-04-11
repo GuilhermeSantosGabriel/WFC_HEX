@@ -3,6 +3,8 @@
 
 #include <vector>
 
+/* ALL OF THESE FUNCTIONS WERE BASED ON https://www.redblobgames.com/grids/hexagons/implementation.html#map-optimized-storage */
+
 class Hex
 {
 private:
