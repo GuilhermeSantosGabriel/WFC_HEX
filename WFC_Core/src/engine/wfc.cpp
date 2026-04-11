@@ -1,5 +1,6 @@
 #include "engine/wfc.h"
 #include "models/hex.h"
+#include "engine/noise_generator/perlin.h"
 
 #include <iostream>
 #include <random>
@@ -47,10 +48,11 @@ static void fill_map(std::vector<Cell> &hex_map, int size, int n_tiles) {
         int r1 = std::max(-size, -q - size);
         int r2 = std::min(size, -q + size);
         for (int r = r1; r <= r2; r++) {
-            
-            int random_height = dis(gen);
 
-            Cell h(q, r, -q - r, random_height, n_tiles, tiles);
+            float frequency = 0.1f;
+            int height = (int)(normalized_perlin(q, r, frequency) * 100.0f);
+            Cell h(q, r, -q - r, height, n_tiles, tiles);
+
             hex_map.push_back(h);
         }
     }
