@@ -1,6 +1,7 @@
 import sys
 import cv2
 import numpy as np
+import math
 
 COLOR_MAP = {
     0: (124, 255, 124), # GRASS
@@ -9,35 +10,75 @@ COLOR_MAP = {
     3: (0, 255, 255)    # SAND
 }
 
+def draw_hexagon(img, center, size, color, border_thickness):
+    """ Desenha um hexágono com preenchimento e borda dinâmica """
+    points = []
+    for i in range(6):
+        angle_rad = math.radians(60 * i)
+        px = center[0] + size * math.cos(angle_rad)
+        py = center[1] + size * math.sin(angle_rad)
+        points.append([px, py])
+    
+    pts = np.array(points, np.int32)
+
+    cv2.fillPoly(img, [pts], color)
+
+    if border_thickness > 0:
+        cv2.polylines(img, [pts], isClosed=True, color=(0, 0, 0), thickness=border_thickness)
+
 try:
     with open("bin/wfc_output", "r") as file:
         lines = file.readlines()
 except Exception as e:
-    print(f"Failed to open file: {e}")
+    print(f"Erro ao abrir arquivo: {e}")
     sys.exit(-1)
 
-IMG_SIZE = (1000, 1000, 3)
-map_image = np.zeros(IMG_SIZE, np.uint8)
-
-try:
-    hex_radius = int(input("Type Hex Radius: "))
-except ValueError:
-    hex_radius = 5
-
+raw_data = []
 for line in lines:
-    try:
-        parts = line.split()
-        if len(parts) < 4: continue
-        
-        x = int(float(parts[0]))
-        y = int(float(parts[1]))
-        height = int (float(parts[2]))
-        tile = int(parts[3])
+    parts = line.split()
+    if len(parts) < 4: continue
+    raw_data.append([float(parts[0]), float(parts[1]), int(parts[3])])
 
-        color = COLOR_MAP.get(tile, (255, 255, 255))
-        
-        cv2.circle(map_image, (x, y), hex_radius, color, -1)
-    except Exception:
-        continue
+if not raw_data:
+    sys.exit(0)
+
+coords_x = [d[0] for d in raw_data]
+coords_y = [d[1] for d in raw_data]
+min_x, max_x = min(coords_x), max(coords_x)
+min_y, max_y = min(coords_y), max(coords_y)
+
+TARGET_RES = 2000
+width_raw = max_x - min_x
+height_raw = max_y - min_y
+SCALE = TARGET_RES / max(width_raw, height_raw) if max(width_raw, height_raw) > 0 else 10
+
+def get_unit_dist(data):
+    sample = data[:100]
+    min_d = float('inf')
+    for i in range(len(sample)):
+        for j in range(i+1, len(sample)):
+            d = math.sqrt((sample[i][0]-sample[j][0])**2 + (sample[i][1]-sample[j][1])**2)
+            if d > 0.1: min_d = min(min_d, d)
+    return min_d
+
+dist_centros = get_unit_dist(raw_data) * SCALE
+hex_size = dist_centros / math.sqrt(3)
+
+if hex_size > 5:
+    border_thickness = max(1, int(hex_size * 0.05))
+else:
+    border_thickness = 0 
+
+PADDING = int(hex_size * 2)
+img_w = int(width_raw * SCALE) + 2 * PADDING
+img_h = int(height_raw * SCALE) + 2 * PADDING
+map_image = np.zeros((img_h, img_w, 3), np.uint8)
+
+for d in raw_data:
+    cx = int((d[0] - min_x) * SCALE) + PADDING
+    cy = int((d[1] - min_y) * SCALE) + PADDING
+    color = COLOR_MAP.get(d[2], (255, 255, 255))
+    
+    draw_hexagon(map_image, (cx, cy), hex_size, color, border_thickness)
 
 cv2.imwrite("hexmap.png", map_image)
