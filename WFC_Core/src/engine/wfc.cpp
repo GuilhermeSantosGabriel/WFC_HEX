@@ -38,20 +38,6 @@ static void validate_rules(const std::map<int, std::map<int, int>>& rules) {
     }
 }
 
-static void fill_map(std::vector<Cell> &hex_map, int size, int n_tiles) {
-
-    for (int q = -size; q <= size; q++) {
-        int r1 = std::max(-size, -q - size);
-        int r2 = std::min(size, -q + size);
-        for (int r = r1; r <= r2; r++) {
-
-            Cell h(q, r, -q - r, 0, n_tiles, tiles);
-
-            hex_map.push_back(h);
-        }
-    }
-}
-
 static bool collapse(Cell &cell) {
     if (cell.possible_tiles.empty()) return false;
 
@@ -110,7 +96,6 @@ static Cell* lowest_entropy_cell(std::vector<Cell> &hex_map) {
 
 bool wave_function_collapse(std::vector<Cell> &hex_map, int size, int n_tiles) {
     validate_rules(ruleset);
-    fill_map(hex_map, size, n_tiles);
 
     std::map<std::tuple<int,int,int>, Cell*> coord_map;
     for (auto &c : hex_map) coord_map[{c.get_q(), c.get_r(), c.get_s()}] = &c;
