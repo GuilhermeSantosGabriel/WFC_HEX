@@ -150,28 +150,28 @@ int cell_height(Cell hex_cell) {
     float base = 0.0f;
     switch (tile_type) {
         case WATER:
-            amplitude = 1.0f;
+            amplitude = 2.0f;
             base = 0.0f;
         break;
 
         case SAND:
-            amplitude = 8.0f;
-            base = 2.0f;
+            amplitude = 2.0f;
+            base = 3.0f;
         break;
 
         case GRASS:
-            amplitude = 18.0f;
-            base = 2.0f;
+            amplitude = 8.0f;
+            base = 6.0f;
         break;
 
         case FOREST:
-            amplitude = 10.0f;
-            base = 20.0f;
+            amplitude = 15.0f;
+            base = 15.0f;
         break;
 
         default:
             base = 0.0f;
-            amplitude = 150.0f;
+            amplitude = 30.0f;
     }
 
     float frequency = 0.1f;
