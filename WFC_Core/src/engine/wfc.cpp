@@ -147,29 +147,35 @@ int cell_height(Cell hex_cell) {
     int tile_type = *hex_cell.possible_tiles.begin();
 
     float amplitude = 0.0f;
+    float base = 0.0f;
     switch (tile_type) {
         case WATER:
-            amplitude = 0.0f;
+            amplitude = 1.0f;
+            base = 0.0f;
         break;
 
         case SAND:
-            amplitude = 15.0f;
+            amplitude = 8.0f;
+            base = 2.0f;
         break;
 
         case GRASS:
-            amplitude = 30.0f;
+            amplitude = 18.0f;
+            base = 2.0f;
         break;
 
         case FOREST:
-            amplitude = 50.0f;
+            amplitude = 10.0f;
+            base = 20.0f;
         break;
 
         default:
-            amplitude = 0.0f;
+            base = 0.0f;
+            amplitude = 150.0f;
     }
 
     float frequency = 0.1f;
-    int height = (int)(amplitude * normalized_perlin(
+    int height = (int)(base + amplitude * normalized_perlin(
         hex_cell.get_q(),
         hex_cell.get_r(),
         frequency
