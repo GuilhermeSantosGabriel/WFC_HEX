@@ -62,11 +62,11 @@ clean:
 .PHONY: all clean tests
 
 run: all
-	./tools/run.sh
+	./tools/run.sh $(radius)
 
 test: tests
 	@if [ -z "$(name)" ]; then \
-		./tools/run_all_tests.sh; \
+		./tools/run_all_tests.sh $(radius); \
 	else \
 		./tools/run_test.sh $(name) $(radius); \
 	fi

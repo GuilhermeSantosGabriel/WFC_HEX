@@ -77,7 +77,7 @@ for hex_cell in hex_cell_map:
 os.makedirs("img", exist_ok=True)
 if len(sys.argv) > 1:
     os.makedirs("img/test", exist_ok=True)
-    base_name = os.path.basename(sys.argv[1]) 
+    base_name = os.path.basename(sys.argv[1]).replace("_output", "")
     file_name = f"img/test/isometric_{base_name}.png"
 else:
     file_name = "img/isometric_hexmap.png"

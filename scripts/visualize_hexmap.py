@@ -83,7 +83,7 @@ for d in raw_data:
 os.makedirs("img", exist_ok=True)
 if len(sys.argv) > 1:
     os.makedirs("img/test", exist_ok=True)
-    base_name = os.path.basename(sys.argv[1]) 
+    base_name = os.path.basename(sys.argv[1]).replace("_output", "")
     file_name = f"img/test/{base_name}.png"
 else:
     file_name = "img/hexmap.png"
