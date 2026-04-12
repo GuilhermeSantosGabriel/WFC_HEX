@@ -3,15 +3,8 @@ import cv2
 import numpy as np
 import math
 
-COLOR_MAP = {
-    0: (124, 255, 124), # GRASS
-    1: (12, 87, 32),    # FOREST
-    2: (255, 0, 0),     # WATER
-    3: (0, 255, 255)    # SAND
-}
 
 def draw_hexagon(img, center, size, color, border_thickness):
-    """ Desenha um hexágono com preenchimento e borda dinâmica """
     points = []
     for i in range(6):
         angle_rad = math.radians(60 * i)

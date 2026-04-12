@@ -2,6 +2,16 @@ import math
 import numpy as np
 import cv2
 
+COLOR_MAP = {
+
+    -1: (255, 255, 255), # SAMPLE
+
+    0: (124, 255, 124), # GRASS
+    1: (12, 87, 32),    # FOREST
+    2: (255, 0, 0),     # WATER
+    3: (0, 255, 255)    # SAND
+}
+
 class HexCell:
 
     x: int; y: int

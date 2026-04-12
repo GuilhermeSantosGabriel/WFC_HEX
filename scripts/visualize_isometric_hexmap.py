@@ -1,14 +1,8 @@
 import sys
 import cv2
 import numpy as np
-from models.HexCell import HexCell
 
-COLOR_MAP = {
-    0: (124, 255, 124), # GRASS
-    1: (12, 87, 32),    # FOREST
-    2: (255, 0, 0),     # WATER
-    3: (0, 255, 255)    # SAND
-}
+from models.HexCell import HexCell, COLOR_MAP
 
 try:
     with open("bin/wfc_output", "r") as file:
