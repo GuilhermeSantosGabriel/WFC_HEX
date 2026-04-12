@@ -16,7 +16,9 @@ int Hex::get_height() { return height; }
 
 // Setters
 void Hex::set_height(int height_s) {
-    assert(height_s >= 0);
+    if (height_s < 0) {
+        height_s = 0;
+    }
     height = height_s;
 }
 
