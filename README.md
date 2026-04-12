@@ -5,7 +5,11 @@
 ```bash
 
 # ==== Installs source dependencies ====
+## debian based distros install
 sudo apt install libglfw3-dev libgl1-mesa-dev libx11-dev libxi-dev libxrandr-dev libxinerama-dev libxcursor-dev libglapi-mesa -y
+
+## fedora install
+sudo dnf install glfw-devel
 
 # ==== Create virtual environment ====
 python3 -m venv venv
