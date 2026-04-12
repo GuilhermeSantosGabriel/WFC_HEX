@@ -2,6 +2,12 @@
 
 A procedural world generator using Wave Function Collapse (WFC) and Noise Algorithms (Perlin, Ridged Multifractal) implemented on a hexagonal grid. This project combines a high-performance C++ core with Python scripts for high-quality 2D and 2.5D (Isometric) visualizations.
 
+<p align="center">
+    <img src="./docs/assets/readme/example.png" width="60%" alt="Water Ruleset Example">
+    <br>
+    <img src="./docs/assets/readme/example_perlin.png" width="50%" alt="Water Ruleset Example">
+</p>
+
 ## 🚀 Features
 - Hexagonal Grid Engine: Robust axial and cube coordinate logic.
 - Wave Function Collapse: Advanced tile adjacency constraints for consistent world generation.
@@ -33,16 +39,23 @@ pip install -r requirements.txt
 # 💻 Usage
 The project uses a Makefile as the primary interface for compilation and execution.
 
-Basic Execution
-To compile the project and run the default WFC generation with visualization:
+### Basic Execution
+- To compile the project and run the default WFC generation with visualization:
 ```bash
 make run
+```
+
+- To get more info about the available commands, run:
+```bash
+make help
 ```
 
 ### Advanced Commands
 Use make help to see all available commands:
 - make: Compiles the main application.
+- make run: Compiles AND Executes the main application.
 - make tests: Compiles all test binaries in bin/.
+- make test: Compiles AND Executes all test binaries in bin/.
 - make clean: Removes all compiled objects and binaries.
 
 # 🧪 Testing & Noise Generation
