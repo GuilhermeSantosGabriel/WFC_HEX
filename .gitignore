@@ -50,6 +50,4 @@ venv/
 # output
 bin/
 obj/
-hexmap.png
-isometric_hexmap.png
-isometric_hex_cell.png
+img/

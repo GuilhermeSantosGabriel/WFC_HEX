@@ -2,9 +2,12 @@ import sys
 import cv2
 import numpy as np
 import math
+import os
 
+from models.HexCell import COLOR_MAP
 
 def draw_hexagon(img, center, size, color, border_thickness):
+
     points = []
     for i in range(6):
         angle_rad = math.radians(60 * i)
@@ -20,7 +23,10 @@ def draw_hexagon(img, center, size, color, border_thickness):
         cv2.polylines(img, [pts], isClosed=True, color=(0, 0, 0), thickness=border_thickness)
 
 try:
-    with open("bin/wfc_output", "r") as file:
+    if len(sys.argv) > 1: file_path = sys.argv[1]
+    else: file_path = "bin/output/wfc_output"
+
+    with open(file_path, "r") as file:
         lines = file.readlines()
 except Exception as e:
     print(f"Erro ao abrir arquivo: {e}")
@@ -74,4 +80,12 @@ for d in raw_data:
     
     draw_hexagon(map_image, (cx, cy), hex_size, color, border_thickness)
 
-cv2.imwrite("hexmap.png", map_image)
+os.makedirs("img", exist_ok=True)
+if len(sys.argv) > 1:
+    os.makedirs("img/test", exist_ok=True)
+    base_name = os.path.basename(sys.argv[1]) 
+    file_name = f"img/test/{base_name}.png"
+else:
+    file_name = "img/hexmap.png"
+
+cv2.imwrite(file_name, map_image)

@@ -1,14 +1,18 @@
 import sys
 import cv2
 import numpy as np
+import os
 
 from models.HexCell import HexCell, COLOR_MAP
 
 try:
-    with open("bin/wfc_output", "r") as file:
+    if len(sys.argv) > 1: file_path = sys.argv[1]
+    else: file_path = "bin/output/wfc_output"
+
+    with open(file_path, "r") as file:
         lines = file.readlines()
 except Exception as e:
-    print(f"Failed to open file: {e}")
+    print(f"Erro ao abrir arquivo: {e}")
     sys.exit(-1)
 
 num_cells = len(lines)
@@ -70,4 +74,12 @@ for hex_cell in hex_cell_map:
         offset_y = -min_f_y + PADDING
     )
 
-cv2.imwrite("isometric_hexmap.png", map_image)
+os.makedirs("img", exist_ok=True)
+if len(sys.argv) > 1:
+    os.makedirs("img/test", exist_ok=True)
+    base_name = os.path.basename(sys.argv[1]) 
+    file_name = f"img/test/isometric_{base_name}.png"
+else:
+    file_name = "img/isometric_hexmap.png"
+
+cv2.imwrite(file_name, map_image)
