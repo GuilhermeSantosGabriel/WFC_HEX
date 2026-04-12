@@ -43,7 +43,8 @@
 # debug information files
 *.dwo
 
-# Python Virtual Environment
+# Python
+**/__pycache__/
 venv/
 
 # output
@@ -51,3 +52,4 @@ bin/
 obj/
 hexmap.png
 isometric_hexmap.png
+isometric_hex_cell.png
