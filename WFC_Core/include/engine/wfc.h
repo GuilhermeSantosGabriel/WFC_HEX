@@ -16,6 +16,8 @@ enum TileTypes {
 extern std::map<int, std::map<int, int>> ruleset;
 extern std::set<int> tiles;
 
+std::vector<Cell*> get_neighbors(Cell &cell, std::map<std::tuple<int,int,int>, Cell*> &coord_map);
+
 bool wave_function_collapse(std::vector<Cell> &hex_map, int size, int n_tiles);
 
 int cell_height(Cell hex_cell);

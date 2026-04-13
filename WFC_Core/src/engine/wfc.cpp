@@ -23,8 +23,8 @@ std::map<int, std::map<int, int>> ruleset = {
     }},
 
     {FOREST, {
-        {GRASS, 3}, {FOREST, 7
-    }}}
+        {GRASS, 3}, {FOREST, 7}
+    }}
 
 };
 
@@ -74,7 +74,7 @@ static bool collapse(Cell &cell) {
     return true;
 }
 
-static std::vector<Cell*> get_neighbors(Cell &cell, std::map<std::tuple<int,int,int>, Cell*> &coord_map) {
+std::vector<Cell*> get_neighbors(Cell &cell, std::map<std::tuple<int,int,int>, Cell*> &coord_map) {
     std::vector<Cell*> neighbors;
     for (int dir = 0; dir < 6; dir++) {
         Hex neighbor_hex = Hex::hex_neighbor(cell, dir);
