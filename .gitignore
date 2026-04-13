@@ -46,6 +46,10 @@
 # Python Virtual Environment
 venv/
 
+# Blender files
+*.blend
+*.blend2
+
 # output
 bin/
 obj/
