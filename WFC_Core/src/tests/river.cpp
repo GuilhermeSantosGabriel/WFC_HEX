@@ -1,4 +1,5 @@
 #include <bits/stdc++.h>
+#include <functional>
 
 #include "models/cell.h"
 #include "engine/noise_generator/perlin.h"
@@ -21,12 +22,19 @@ int main() {
 
     generate_empty_shell(hex_map, size);
 
+    std::map<std::tuple<int,int,int>, Cell*> coord_map;
+    for (auto &c : hex_map) coord_map[{c.get_q(), c.get_r(), c.get_s()}] = &c;
+
     float base = 0.0f;
-    float amplitude = 60.0f;
-    float frequency = 0.1f;
+    float amplitude = 400.0f;
+    float frequency = 0.01f;
+
+    float water_height = 15;
 
     float ridged_value;
     float height;
+
+    vector<reference_wrapper<Cell>> water_cells;
 
     for (auto &c : hex_map){
 
@@ -36,22 +44,38 @@ int main() {
 
         height = (int)(base + amplitude * ridged_value);
 
-        if (height < 3) {
-            height = 0;
+        if (height <= water_height) {
+            height = water_height - 1;
             c.possible_tiles = {WATER};
             c.entropy = 1;
             c.collapsed = true;
-        } else {
-            c.possible_tiles = {SAND, GRASS, FOREST};
+            water_cells.push_back(c);
+        } 
+        else {
+            c.possible_tiles = {GRASS, SAND, FOREST};
             c.entropy = 3;
             c.collapsed = false;
         }
+        // else {
+        //     c.possible_tiles = {-1};
+        //     c.entropy = 1;
+        //     c.collapsed = false;
+        // }
 
         c.set_height(height);
     }
 
+    for (Cell& cell: water_cells) {
+        for (Cell* neighbor : get_neighbors(cell, coord_map)) {
+            if (!neighbor->collapsed) {
+                neighbor->possible_tiles = {SAND};
+                neighbor->entropy = 1;
+                neighbor->collapsed = true;
+            }
+        }
+    }
+
     if (wave_function_collapse(hex_map, size, tiles.size())) {
-    // if (true) {
         for (auto &c : hex_map){
             Point p = hex_to_pixel(layout, c);
             cout << p.x << " " << p.y << " " << c.get_height() << " " << *c.possible_tiles.begin() << endl;
