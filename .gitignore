@@ -43,7 +43,8 @@
 # debug information files
 *.dwo
 
-# Python Virtual Environment
+# Python
+**/__pycache__/
 venv/
 
 # Blender files
@@ -53,5 +54,4 @@ venv/
 # output
 bin/
 obj/
-hexmap.png
-isometric_hexmap.png
+img/

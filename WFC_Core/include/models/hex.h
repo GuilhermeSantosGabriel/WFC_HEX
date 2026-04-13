@@ -3,6 +3,8 @@
 
 #include <vector>
 
+/* ALL OF THESE FUNCTIONS WERE BASED ON https://www.redblobgames.com/grids/hexagons/implementation.html#map-optimized-storage */
+
 class Hex
 {
 private:
@@ -18,6 +20,9 @@ public:
     int get_r() const;
     int get_s() const;
     int get_height();
+
+    // Setters
+    void set_height(int height_s);
 
     // Operators
     Hex operator+(const Hex& other) const;

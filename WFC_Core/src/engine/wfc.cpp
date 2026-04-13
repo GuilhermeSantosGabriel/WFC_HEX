@@ -1,10 +1,12 @@
 #include "engine/wfc.h"
 #include "models/hex.h"
+#include "engine/noise_generator/perlin.h"
 
 #include <iostream>
 #include <random>
 #include <algorithm>
 #include <tuple>
+#include <cassert>
 
 std::map<int, std::map<int, int>> ruleset = {
 
@@ -33,26 +35,6 @@ static void validate_rules(const std::map<int, std::map<int, int>>& rules) {
         int soma = 0;
         for (auto const& [neighbor, weight] : neighbors) soma += weight;
         if (soma != 10) std::cerr << "Error: Tile " << tile << " sums " << soma << "\n";
-    }
-}
-
-static void fill_map(std::vector<Cell> &hex_map, int size, int n_tiles) {
-
-    static std::random_device rd;
-    static std::mt19937 gen(rd());
-
-    std::uniform_int_distribution<> dis(0, 20);
-
-    for (int q = -size; q <= size; q++) {
-        int r1 = std::max(-size, -q - size);
-        int r2 = std::min(size, -q + size);
-        for (int r = r1; r <= r2; r++) {
-            
-            int random_height = dis(gen);
-
-            Cell h(q, r, -q - r, random_height, n_tiles, tiles);
-            hex_map.push_back(h);
-        }
     }
 }
 
@@ -114,7 +96,6 @@ static Cell* lowest_entropy_cell(std::vector<Cell> &hex_map) {
 
 bool wave_function_collapse(std::vector<Cell> &hex_map, int size, int n_tiles) {
     validate_rules(ruleset);
-    fill_map(hex_map, size, n_tiles);
 
     std::map<std::tuple<int,int,int>, Cell*> coord_map;
     for (auto &c : hex_map) coord_map[{c.get_q(), c.get_r(), c.get_s()}] = &c;
@@ -142,4 +123,48 @@ bool wave_function_collapse(std::vector<Cell> &hex_map, int size, int n_tiles) {
         }
     }
     return true;
+}
+
+int cell_height(Cell hex_cell) {
+
+    assert(hex_cell.collapsed);
+
+    int tile_type = *hex_cell.possible_tiles.begin();
+
+    float amplitude = 0.0f;
+    float base = 0.0f;
+    switch (tile_type) {
+        case WATER:
+            amplitude = 2.0f;
+            base = 0.0f;
+        break;
+
+        case SAND:
+            amplitude = 2.0f;
+            base = 3.0f;
+        break;
+
+        case GRASS:
+            amplitude = 8.0f;
+            base = 6.0f;
+        break;
+
+        case FOREST:
+            amplitude = 15.0f;
+            base = 15.0f;
+        break;
+
+        default:
+            base = 0.0f;
+            amplitude = 30.0f;
+    }
+
+    float frequency = 0.1f;
+    int height = (int)(base + amplitude * normalized_perlin(
+        hex_cell.get_q(),
+        hex_cell.get_r(),
+        frequency
+    ));
+
+    return height;
 }

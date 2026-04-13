@@ -14,6 +14,14 @@ int Hex::get_r() const { return r; }
 int Hex::get_s() const { return s; }
 int Hex::get_height() { return height; }
 
+// Setters
+void Hex::set_height(int height_s) {
+    if (height_s < 0) {
+        height_s = 0;
+    }
+    height = height_s;
+}
+
 // Operators
 Hex Hex::operator+(const Hex& other) const {
     return Hex(q + other.q, r + other.r, s + other.s, height + other.height);

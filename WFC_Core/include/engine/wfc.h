@@ -18,4 +18,6 @@ extern std::set<int> tiles;
 
 bool wave_function_collapse(std::vector<Cell> &hex_map, int size, int n_tiles);
 
+int cell_height(Cell hex_cell);
+
 #endif
