@@ -47,6 +47,10 @@
 **/__pycache__/
 venv/
 
+# Blender files
+*.blend
+*.blend2
+
 # output
 bin/
 obj/
