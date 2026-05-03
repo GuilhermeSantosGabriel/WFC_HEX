@@ -1,5 +1,6 @@
-#include <iostream>
 #include "engine/rules.h"
+#include <iostream>
+#include <cassert>
 
 std::map<int, std::map<int, int>> ruleset = {
 
@@ -31,11 +32,28 @@ void validate_ruleset(const std::map<int, std::map<int, int>>& ruleset) {
     }
 }
 
-// TODO - Rules - HeightFactors
-// TODO - Rules - validate_height_factors()
-void validate_height_factors() {}
+std::unordered_map<int, HeightFactor> height_factors = {
+
+    {EMPTY, {0.0f, 30.0f}},
+
+    {WATER, {2.0f, 0.0f}},
+
+    {SAND, {2.0f, 3.0f}},
+
+    {GRASS, {8.0f, 6.0f}},
+
+    {FOREST, {15.0f, 15.0f}},
+
+};
+
+void validate_height_factors(std::unordered_map<int, HeightFactor> height_factors) {
+    for (auto& [tile_type, factor] : height_factors) {
+        assert(factor.base >= 0 && "Negative Base height found!");
+        assert(factor.amplitude >= 0 && "Negative Base amplitude found!");
+    }
+}
 
 void validate_constraints() {
     validate_ruleset(ruleset);
-    validate_height_factors();
+    validate_height_factors(height_factors);
 }

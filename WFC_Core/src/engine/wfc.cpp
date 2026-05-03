@@ -1,5 +1,6 @@
 #include "engine/wfc.h"
 #include <stdexcept>
+#include <cassert>
 
 void wave_function_collapse(HexMap& hex_map) {
 
@@ -14,6 +15,8 @@ void wave_function_collapse(HexMap& hex_map) {
         if (!cell) break;
 
         collapse(*cell, gen);
+
+        set_height(*cell);
 
         update_neighbors(*cell, hex_map);
 
@@ -81,4 +84,25 @@ void update_neighbors(Cell& cell, HexMap& hex_map) {
             neighbor->entropy = neighbor->possible_tiles.size();
         }
     }
+}
+
+
+#include "engine/noises/perlin.h"
+
+void set_height(Cell& cell) {
+    assert(cell.collapsed && "Trying to set height of an uncollapsed cell!");
+
+    int tile_type = *cell.possible_tiles.begin();
+
+    HeightFactor hf = height_factors.at(tile_type);
+
+    float frequency = 0.1f;
+    int height = (int)(
+        hf.base + hf.amplitude * normalized_perlin(
+            cell.get_q(),
+            cell.get_r(),
+            frequency
+    ));
+
+    cell.set_height(height);
 }

@@ -17,4 +17,6 @@ int random_weighted_tile(Cell& cell, std::mt19937 &gen);
 
 void update_neighbors(Cell& cell, HexMap& hex_map);
 
+void set_height(Cell& cell);
+
 #endif
