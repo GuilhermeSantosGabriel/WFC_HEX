@@ -1,27 +1,22 @@
-#include <bits/stdc++.h>
+#include <iostream>
 
-#include "models/cell.h"
+#include "engine/rules.h"
 #include "engine/hex_to_pixels.h"
-
-#include "tests/test_utils.h"
+#include "models/hexmap.h"
+#include "engine/river_generator.h"
+#include "engine/wfc.h"
+#include "engine/opengl.h"
 
 using namespace std;
 
 int main() {
 
-    int size;
-    cerr << "Type map radius: ";
-    cin >> size;
+    int radius;
+    cerr << "Type map radius (size): ";
+    cin >> radius;
 
     Layout layout(layout_flat, Point(5,5), Point(500, 500));
-    vector<Cell> hex_map;
+    HexMap hex_map = HexMap::generate_empty_hex_map(layout, radius);
 
-    generate_empty_shell(hex_map, size);
-
-    for (auto &c : hex_map){
-
-        Point p = hex_to_pixel(layout, c);
-
-        cout << p.x << " " << p.y << " " << c.get_height() << " " << *c.possible_tiles.begin() << endl;
-    }
+    hex_map.print_map();
 }

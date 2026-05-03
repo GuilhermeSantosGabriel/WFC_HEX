@@ -1,29 +1,24 @@
-#include <bits/stdc++.h>
-#include <functional>
+#include <iostream>
 
-#include "models/cell.h"
-#include "engine/noise_generator/perlin.h"
-#include "engine/noise_generator/ridged_multifractal.h"
+#include "engine/rules.h"
 #include "engine/hex_to_pixels.h"
+#include "models/hexmap.h"
+#include "engine/river_generator.h"
 #include "engine/wfc.h"
+#include "engine/opengl.h"
 
-#include "tests/test_utils.h"
+#include "engine/noises/ridged_multifractal.h"
 
 using namespace std;
 
 int main() {
 
-    int size;
-    cerr << "Type map radius: ";
-    cin >> size;
+    int radius;
+    cerr << "Type map radius (size): ";
+    cin >> radius;
 
     Layout layout(layout_flat, Point(5,5), Point(500, 500));
-    vector<Cell> hex_map;
-
-    generate_empty_shell(hex_map, size);
-
-    std::map<std::tuple<int,int,int>, Cell*> coord_map;
-    for (auto &c : hex_map) coord_map[{c.get_q(), c.get_r(), c.get_s()}] = &c;
+    HexMap hex_map = HexMap::generate_empty_hex_map(layout, radius);
 
     float base = 0.0f;
     float amplitude = 400.0f;
@@ -36,7 +31,7 @@ int main() {
 
     vector<reference_wrapper<Cell>> water_cells;
 
-    for (auto &c : hex_map){
+    for (auto &c : hex_map.cells){
 
         ridged_value = 1 - ridged_multifractal(
             c.get_q()*frequency, c.get_r()*frequency
@@ -66,7 +61,7 @@ int main() {
     }
 
     for (Cell& cell: water_cells) {
-        for (Cell* neighbor : get_neighbors(cell, coord_map)) {
+        for (Cell* neighbor : hex_map.get_neighbors(cell)) {
             if (!neighbor->collapsed) {
                 neighbor->possible_tiles = {SAND};
                 neighbor->entropy = 1;
@@ -75,14 +70,7 @@ int main() {
         }
     }
 
-    if (wave_function_collapse(hex_map, size, tiles.size())) {
-        for (auto &c : hex_map){
-            Point p = hex_to_pixel(layout, c);
-            cout << p.x << " " << p.y << " " << c.get_height() << " " << *c.possible_tiles.begin() << endl;
-        }
-    } else {
-        cout << "yeah we lost" << endl;
-    }
+    wave_function_collapse(hex_map);
 
-
+    hex_map.print_map();
 }
