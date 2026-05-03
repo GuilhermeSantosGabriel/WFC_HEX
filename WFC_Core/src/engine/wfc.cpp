@@ -2,76 +2,9 @@
 #include "models/hex.h"
 #include "engine/noise_generator/perlin.h"
 
-#include <iostream>
-#include <random>
-#include <algorithm>
-#include <tuple>
-#include <cassert>
-
-std::map<int, std::map<int, int>> ruleset = {
-
-    {WATER,  {
-        {WATER, 4}, {SAND, 6}
-    }},
-
-    {SAND,   {
-        {WATER, 1}, {SAND, 5}, {GRASS, 4}
-    }},
-
-    {GRASS,  {
-        {SAND, 3}, {GRASS, 4}, {FOREST, 3}
-    }},
-
-    {FOREST, {
-        {GRASS, 3}, {FOREST, 7}
-    }}
-
-};
-
-std::set<int> tiles = {GRASS, FOREST, WATER, SAND};
-
-static void validate_rules(const std::map<int, std::map<int, int>>& rules) {
-    for (auto const& [tile, neighbors] : rules) {
-        int soma = 0;
-        for (auto const& [neighbor, weight] : neighbors) soma += weight;
-        if (soma != 10) std::cerr << "Error: Tile " << tile << " sums " << soma << "\n";
-    }
-}
-
-static bool collapse(Cell &cell) {
-    if (cell.possible_tiles.empty()) return false;
-
-    static std::random_device rd;
-    static std::mt19937 gen(rd());
-
-    int total_weight = 0;
-    std::map<int, int> current_weights;
-
-    for (int tile : cell.possible_tiles) {
-        int w = ruleset[tile][tile]; 
-        if (w == 0) w = 1;
-        current_weights[tile] = w;
-        total_weight += w;
-    }
-
-    std::uniform_int_distribution<> dis(0, total_weight - 1);
-    int random_roll = dis(gen);
-
-    int chosen_tile = *cell.possible_tiles.begin();
-    int cumulative_sum = 0;
-
-    for (auto const& [tile, weight] : current_weights) {
-        cumulative_sum += weight;
-        if (random_roll < cumulative_sum) {
-            chosen_tile = tile;
-            break;
-        }
-    }
-
-    cell.possible_tiles = {chosen_tile};
-    cell.entropy = 1;
-    cell.collapsed = true;
-    return true;
+// TODO - WFC - wave_function_collapse(HexMap)
+static void wave_function_collapse(HexMap& hex_map) {
+    
 }
 
 std::vector<Cell*> get_neighbors(Cell &cell, std::map<std::tuple<int,int,int>, Cell*> &coord_map) {

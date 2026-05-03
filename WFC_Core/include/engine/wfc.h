@@ -1,20 +1,10 @@
 #ifndef WFC_H
 #define WFC_H
 
-#include <vector>
-#include <map>
-#include <set>
 #include "models/cell.h"
+#include "engine/rules.h"
 
-enum TileTypes {
-    GRASS,
-    FOREST,
-    WATER,
-    SAND
-};
 
-extern std::map<int, std::map<int, int>> ruleset;
-extern std::set<int> tiles;
 
 std::vector<Cell*> get_neighbors(Cell &cell, std::map<std::tuple<int,int,int>, Cell*> &coord_map);
 
