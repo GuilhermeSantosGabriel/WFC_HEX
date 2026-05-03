@@ -1,6 +1,7 @@
-#include <cassert>
 #include "models/hexmap.h"
 #include "engine/rules.h"
+#include <cassert>
+#include <iostream>
 
 HexMap::HexMap(int radius_s) :
     radius(radius_s)
@@ -87,4 +88,10 @@ HexMap HexMap::generate_empty_hex_map(Layout layout, int radius) {
     }
 
     return new_map;
+}
+
+void HexMap::print_map() {
+    for (auto &c : cells){
+        std::cout << c.x << " " << c.y << " " << c.get_height() << " " << *c.possible_tiles.begin() << std::endl;
+    }
 }

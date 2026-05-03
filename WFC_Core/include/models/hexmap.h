@@ -29,6 +29,8 @@ public:
 
     std::vector<Cell*> get_neighbors(Cell& center);
 
+    void print_map();
+
     static HexMap generate_uncollapsed_hex_map(Layout layout, int radius);
     static HexMap generate_empty_hex_map(Layout layout, int radius);
 

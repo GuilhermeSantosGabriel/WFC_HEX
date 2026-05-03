@@ -24,9 +24,7 @@ int main() {
 
     wave_function_collapse(hex_map);
 
-    for (auto &c : hex_map.cells){
-        cout << c.x << " " << c.y << " " << c.get_height() << " " << *c.possible_tiles.begin() << endl;;
-    }
+    hex_map.print_map();
 
     render_hex_map(hex_map);
 }
