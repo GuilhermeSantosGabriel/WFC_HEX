@@ -19,7 +19,7 @@ public:
 
     void update_possible_tiles();
 
-    void collapse();
+    void collapse(int tile);
 };
 
 #endif

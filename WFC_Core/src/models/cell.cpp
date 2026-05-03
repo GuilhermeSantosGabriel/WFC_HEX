@@ -17,7 +17,8 @@ void Cell::update_possible_tiles() {
 
 }
 
-// TODO - Cell - collapse()
-void Cell::collapse() {
-
+void Cell::collapse(int tile) {
+    possible_tiles = {tile};
+    entropy = 1;
+    collapsed = true;
 }

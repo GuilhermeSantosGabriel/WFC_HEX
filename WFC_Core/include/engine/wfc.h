@@ -7,12 +7,12 @@
 
 static void wave_function_collapse(HexMap& hex_map);
 
-static Cell* get_next_uncollapsed_cell(HexMap& hex_map);
+static Cell* lowest_entropy_cell(HexMap& hex_map);
 
-static void collapse(Cell& cell);
+static void collapse(Cell& cell, std::mt19937 &gen);
 
-static int random_weighted_tile(Cell& cell);
+static int random_weighted_tile(Cell& cell, std::mt19937 &gen);
 
-static void update_neighbors(Cell& cell);
+static void update_neighbors(Cell& cell, HexMap& hex_map);
 
 #endif
