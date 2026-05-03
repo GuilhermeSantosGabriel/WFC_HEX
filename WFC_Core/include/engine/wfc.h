@@ -1,15 +1,18 @@
 #ifndef WFC_H
 #define WFC_H
 
+#include "models/hexmap.h"
 #include "models/cell.h"
 #include "engine/rules.h"
 
+static void wave_function_collapse(HexMap& hex_map);
 
+static Cell* get_next_uncollapsed_cell(HexMap& hex_map);
 
-std::vector<Cell*> get_neighbors(Cell &cell, std::map<std::tuple<int,int,int>, Cell*> &coord_map);
+static void collapse(Cell& cell);
 
-bool wave_function_collapse(std::vector<Cell> &hex_map, int size, int n_tiles);
+static int random_weighted_tile(Cell& cell);
 
-int cell_height(Cell hex_cell);
+static void update_neighbors(Cell& cell);
 
 #endif

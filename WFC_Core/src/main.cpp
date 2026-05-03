@@ -1,45 +1,36 @@
-#include <bits/stdc++.h>
+// TODO - reorganize with updated flow
+//      - validate_constraints()
+//      - generate_uncollapsed_hex_map() -> HexMap
+//            - convert cells coords to (x, y)
+//      - generate_rivers(HexMap)
+//      - wave_function_collapse(HexMap)
+//      - OpenGL.render_hex_map(HexMap)
 
-#include "models/cell.h"
+#include <iostream>
+
+#include "engine/rules.h"
 #include "engine/hex_to_pixels.h"
+#include "models/hexmap.h"
+#include "engine/river_generator.h"
 #include "engine/wfc.h"
+#include "engine/opengl.h"
 
 using namespace std;
 
 int main() {
 
-    int size;
+    int radius;
     cerr << "Type map radius (size): ";
-    cin >> size;
+    cin >> radius;
 
-    vector<Cell> hex_map;
+    validate_constraints();
+
     Layout layout(layout_flat, Point(5,5), Point(500, 500));
+    HexMap hex_map = HexMap::generate_uncollapsed_hex_map(layout, radius);
 
-    for (int q = -size; q <= size; q++) {
-        int r1 = std::max(-size, -q - size);
-        int r2 = std::min(size, -q + size);
-        for (int r = r1; r <= r2; r++) {
+    generate_river(hex_map);
 
-            Cell h(q, r, -q - r, 0, tiles.size(), tiles);
+    wave_function_collapse(hex_map);
 
-            hex_map.push_back(h);
-        }
-    }
-
-    if (wave_function_collapse(hex_map, size, tiles.size())) {
-        //cout << "SUCCESS!!!" << endl;
-        
-        for (auto &c : hex_map){
-
-            c.set_height(cell_height(c));
-
-            Point p = hex_to_pixel(layout, c);
-            
-            //cout << q << " " << r << " " << -q-r << endl;
-            cout << p.x << " " << p.y << " " << c.get_height() << " " << *c.possible_tiles.begin() << endl;;
-        }
-        
-    } else {
-        cout << "yeah we lost" << endl;
-    }
+    render_hex_map(hex_map);
 }
