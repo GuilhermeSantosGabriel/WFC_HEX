@@ -12,11 +12,6 @@ Cell::Cell(
     entropy(e), possible_tiles(t), collapsed(false) {}
 
 
-// TODO - Cell - update_possible_tiles()
-void Cell::update_possible_tiles() {
-
-}
-
 void Cell::collapse(int tile) {
     possible_tiles = {tile};
     entropy = 1;

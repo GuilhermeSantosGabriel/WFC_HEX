@@ -17,8 +17,6 @@ public:
         int height,
         int e, const std::set<int>& t);
 
-    void update_possible_tiles();
-
     void collapse(int tile);
 };
 

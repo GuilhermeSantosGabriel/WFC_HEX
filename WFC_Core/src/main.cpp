@@ -1,11 +1,3 @@
-// TODO - reorganize with updated flow
-//      - validate_constraints()
-//      - generate_uncollapsed_hex_map() -> HexMap
-//            - convert cells coords to (x, y)
-//      - generate_rivers(HexMap)
-//      - wave_function_collapse(HexMap)
-//      - OpenGL.render_hex_map(HexMap)
-
 #include <iostream>
 
 #include "engine/rules.h"
