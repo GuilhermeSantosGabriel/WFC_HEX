@@ -5,7 +5,7 @@ cd "$(dirname "$0")/.."
 RADIUS=${1:-45}
 
 make
-mkdir bin/output
+mkdir -p bin/output
 
 ./bin/wfc > bin/output/wfc_output <<< "$RADIUS"
 echo

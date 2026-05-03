@@ -1,4 +1,4 @@
-#include "engine/noise_generator/perlin.h"
+#include "engine/noises/perlin.h"
 
 float ridged_multifractal(float x, float y) {
     float value = perlin(x,y);

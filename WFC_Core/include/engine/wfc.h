@@ -5,14 +5,16 @@
 #include "models/cell.h"
 #include "engine/rules.h"
 
-static void wave_function_collapse(HexMap& hex_map);
+#include <random>
 
-static Cell* lowest_entropy_cell(HexMap& hex_map);
+void wave_function_collapse(HexMap& hex_map);
 
-static void collapse(Cell& cell, std::mt19937 &gen);
+Cell* lowest_entropy_cell(HexMap& hex_map);
 
-static int random_weighted_tile(Cell& cell, std::mt19937 &gen);
+void collapse(Cell& cell, std::mt19937 &gen);
 
-static void update_neighbors(Cell& cell, HexMap& hex_map);
+int random_weighted_tile(Cell& cell, std::mt19937 &gen);
+
+void update_neighbors(Cell& cell, HexMap& hex_map);
 
 #endif

@@ -15,6 +15,6 @@ enum TileTypes {
 extern std::map<int, std::map<int, int>> ruleset;
 extern std::set<int> tiles;
 
-static void validate_constraints();
+void validate_constraints();
 
 #endif

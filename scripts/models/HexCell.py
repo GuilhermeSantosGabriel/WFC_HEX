@@ -4,12 +4,12 @@ import cv2
 
 COLOR_MAP = {
 
-    -1: (255, 255, 255), # SAMPLE
+    0: (255, 255, 255), # SAMPLE
 
-    0: (124, 255, 124), # GRASS
-    1: (12, 87, 32),    # FOREST
-    2: (255, 0, 0),     # WATER
-    3: (0, 255, 255)    # SAND
+    1: (124, 255, 124), # GRASS
+    2: (12, 87, 32),    # FOREST
+    3: (255, 0, 0),     # WATER
+    4: (0, 255, 255)    # SAND
 }
 
 class HexCell:

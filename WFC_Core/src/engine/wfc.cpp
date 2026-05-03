@@ -1,8 +1,7 @@
 #include "engine/wfc.h"
-#include <random>
 #include <stdexcept>
 
-static void wave_function_collapse(HexMap& hex_map) {
+void wave_function_collapse(HexMap& hex_map) {
 
     static std::random_device rd;
     static std::mt19937 gen(rd());
@@ -22,7 +21,7 @@ static void wave_function_collapse(HexMap& hex_map) {
     }
 }
 
-static Cell* lowest_entropy_cell(HexMap& hex_map) {
+Cell* lowest_entropy_cell(HexMap& hex_map) {
     Cell* lowest = nullptr;
     for (auto &c : hex_map.cells) {
         if (!c.collapsed) {
@@ -32,7 +31,7 @@ static Cell* lowest_entropy_cell(HexMap& hex_map) {
     return lowest;
 }
 
-static void collapse(Cell& cell, std::mt19937 &gen) {
+void collapse(Cell& cell, std::mt19937 &gen) {
 
     if (cell.possible_tiles.empty())
         throw std::runtime_error("WFC Error: A cell has zero possible tiles.");
@@ -41,7 +40,7 @@ static void collapse(Cell& cell, std::mt19937 &gen) {
     cell.collapse(tile);
 }
 
-static int random_weighted_tile(Cell& cell, std::mt19937 &gen) {
+int random_weighted_tile(Cell& cell, std::mt19937 &gen) {
 
     int total_weight = 0;
     std::map<int, int> current_weights;
@@ -70,7 +69,7 @@ static int random_weighted_tile(Cell& cell, std::mt19937 &gen) {
     return chosen_tile;
 }
 
-static void update_neighbors(Cell& cell, HexMap& hex_map) {
+void update_neighbors(Cell& cell, HexMap& hex_map) {
     for (Cell* neighbor : hex_map.get_neighbors(cell)) {
         if (!neighbor->collapsed) {
             std::set<int> allowed;

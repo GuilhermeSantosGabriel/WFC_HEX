@@ -3,6 +3,6 @@
 
 #include "models/hexmap.h"
 
-static void generate_river(HexMap& hex_map);
+void generate_river(HexMap& hex_map);
 
 #endif

@@ -3,6 +3,6 @@
 
 #include "models/hexmap.h"
 
-static void render_hex_map(HexMap hex_map);
+void render_hex_map(HexMap hex_map);
 
 #endif

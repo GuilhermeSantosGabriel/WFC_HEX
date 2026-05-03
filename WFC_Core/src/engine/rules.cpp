@@ -23,7 +23,7 @@ std::map<int, std::map<int, int>> ruleset = {
 
 std::set<int> tiles = {GRASS, FOREST, SAND};
 
-static void validate_ruleset(const std::map<int, std::map<int, int>>& ruleset) {
+void validate_ruleset(const std::map<int, std::map<int, int>>& ruleset) {
     for (auto const& [tile, neighbors] : ruleset) {
         int sum = 0;
         for (auto const& [neighbor, weight] : neighbors) sum += weight;
@@ -33,9 +33,9 @@ static void validate_ruleset(const std::map<int, std::map<int, int>>& ruleset) {
 
 // TODO - Rules - HeightFactors
 // TODO - Rules - validate_height_factors()
-static void validate_height_factors() {}
+void validate_height_factors() {}
 
-static void validate_constraints() {
+void validate_constraints() {
     validate_ruleset(ruleset);
     validate_height_factors();
 }
