@@ -26,5 +26,8 @@ int main() {
 
     hex_map.print_map();
 
-    render_hex_map(hex_map);
+    GLFWwindow* window = setup_window();
+    render_hex_map(hex_map, window);
+    glfwDestroyWindow(window);
+    glfwTerminate();
 }
