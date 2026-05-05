@@ -1,25 +1,22 @@
 #ifndef WFC_H
 #define WFC_H
 
-#include <vector>
-#include <map>
-#include <set>
+#include "models/hexmap.h"
 #include "models/cell.h"
+#include "engine/rules.h"
 
-enum TileTypes {
-    GRASS,
-    FOREST,
-    WATER,
-    SAND
-};
+#include <random>
 
-extern std::map<int, std::map<int, int>> ruleset;
-extern std::set<int> tiles;
+void wave_function_collapse(HexMap& hex_map);
 
-std::vector<Cell*> get_neighbors(Cell &cell, std::map<std::tuple<int,int,int>, Cell*> &coord_map);
+Cell* lowest_entropy_cell(HexMap& hex_map);
 
-bool wave_function_collapse(std::vector<Cell> &hex_map, int size, int n_tiles);
+void collapse(Cell& cell, std::mt19937 &gen);
 
-int cell_height(Cell hex_cell);
+int random_weighted_tile(Cell& cell, std::mt19937 &gen);
+
+void update_neighbors(Cell& cell, HexMap& hex_map);
+
+void set_height(Cell& cell);
 
 #endif

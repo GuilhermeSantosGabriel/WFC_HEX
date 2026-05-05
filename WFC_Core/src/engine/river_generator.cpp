@@ -1,24 +1,10 @@
-#include <iostream>
-
 #include "engine/rules.h"
-#include "engine/hex_to_pixels.h"
-#include "models/hexmap.h"
 #include "engine/river_generator.h"
-#include "engine/wfc.h"
-#include "engine/opengl.h"
-
 #include "engine/noises/ridged_multifractal.h"
 
 using namespace std;
 
-int main() {
-
-    int radius;
-    cerr << "Type map radius (size): ";
-    cin >> radius;
-
-    Layout layout(layout_flat, Point(5,5), Point(500, 500));
-    HexMap hex_map = HexMap::generate_empty_hex_map(layout, radius);
+void generate_river(HexMap& hex_map) {
 
     float base = 0.0f;
     float amplitude = 400.0f;
@@ -41,36 +27,28 @@ int main() {
 
         if (height <= water_height) {
             height = water_height - 1;
-            c.possible_tiles = {WATER};
-            c.entropy = 1;
-            c.collapsed = true;
+            c.collapse(WATER);
             water_cells.push_back(c);
-        } 
+        }
+
         else {
             c.possible_tiles = {GRASS, SAND, FOREST};
             c.entropy = 3;
             c.collapsed = false;
         }
-        // else {
-        //     c.possible_tiles = {-1};
-        //     c.entropy = 1;
-        //     c.collapsed = false;
-        // }
 
         c.set_height(height);
     }
 
+    set_river_margin(hex_map, water_cells);
+}
+
+void set_river_margin(HexMap& hex_map, vector<reference_wrapper<Cell>> water_cells) {
     for (Cell& cell: water_cells) {
         for (Cell* neighbor : hex_map.get_neighbors(cell)) {
-            if (!neighbor->collapsed) {
-                neighbor->possible_tiles = {SAND};
-                neighbor->entropy = 1;
-                neighbor->collapsed = true;
-            }
+            if (
+                !neighbor->collapsed
+            ) cell.collapse(SAND);
         }
     }
-
-    wave_function_collapse(hex_map);
-
-    hex_map.print_map();
 }

@@ -18,8 +18,7 @@ CORE_SRCS_C   := $(SRC_DIR)/external/glad.c
 MAIN_SRC     := $(SRC_DIR)/main.cpp
 TEST_SRCS    := $(shell find $(SRC_DIR)/tests -name "*.cpp")
 
-TEST_HELPERS := $(SRC_DIR)/tests/test_utils.cpp
-TEST_RUNNERS := $(filter-out $(TEST_HELPERS), $(TEST_SRCS))
+TEST_RUNNERS := $(TEST_SRCS)
 
 CORE_OBJS := $(CORE_SRCS_CPP:$(SRC_DIR)/%.cpp=$(OBJ_DIR)/%.o) \
              $(CORE_SRCS_C:$(SRC_DIR)/%.c=$(OBJ_DIR)/%.o)
@@ -41,7 +40,7 @@ $(TARGET): $(CORE_OBJS) $(MAIN_OBJ)
 tests: $(TEST_BINARIES)
 	@echo "All tests compiled in $(BIN_DIR)/"
 
-$(BIN_DIR)/test_%: $(OBJ_DIR)/tests/%.o $(CORE_OBJS) $(TEST_HELPERS_OBJ)
+$(BIN_DIR)/test_%: $(OBJ_DIR)/tests/%.o $(CORE_OBJS)
 	@mkdir -p $(BIN_DIR)
 	$(CXX) $(CXXFLAGS) $^ -o $@ $(LIBS)
 
