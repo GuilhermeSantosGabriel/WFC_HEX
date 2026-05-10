@@ -5,8 +5,6 @@
 #include "models/hexmap.h"
 #include "engine/river_generator.h"
 #include "engine/wfc.h"
-#include "engine/opengl.h"
-
 #include "engine/noises/ridged_multifractal.h"
 
 using namespace std;

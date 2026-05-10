@@ -5,7 +5,6 @@
 #include "models/hexmap.h"
 #include "engine/river_generator.h"
 #include "engine/wfc.h"
-#include "engine/opengl.h"
 
 #include "engine/noises/perlin.h"
 

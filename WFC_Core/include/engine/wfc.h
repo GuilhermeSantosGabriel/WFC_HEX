@@ -9,9 +9,6 @@
 
 #include <random>
 
-
-
-
 class WFC{
 private:
     inline static std::mt19937 gen;
@@ -28,6 +25,5 @@ public:
     int random_weighted_tile(Cell& cell);
     void update_neighbors(Cell& cell, HexMap& hex_map);
 };
-
 
 #endif
