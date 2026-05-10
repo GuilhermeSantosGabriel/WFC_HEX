@@ -24,7 +24,7 @@ int main() {
     GLFWwindow* window = setup_window();
     HexRenderer hex_renderer = HexRenderer(4);
 
-    generate_river(hex_map);
+    generate_river(hex_map, true, window, hex_renderer);
 
     wave_function_collapse(hex_map, window, hex_renderer);
 

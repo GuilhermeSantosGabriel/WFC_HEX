@@ -2,12 +2,11 @@
 #define RIVER_GENERATOR_H
 
 #include "models/hexmap.h"
-#include "models/cell.h"
+#include "engine/opengl/window_manager.h"
+#include "engine/opengl/hex_renderer.h"
 
-using namespace std;
+void generate_river(HexMap& hex_map, bool sand_margin, GLFWwindow* window, HexRenderer& hex_renderer);
 
-void generate_river(HexMap& hex_map);
-
-void set_river_margin(HexMap& hex_map, vector<reference_wrapper<Cell>> water_cells);
+void generate_river_step(Cell& c, bool sand_margin);
 
 #endif
