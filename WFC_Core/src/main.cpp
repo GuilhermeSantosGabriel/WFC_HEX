@@ -21,14 +21,14 @@ int main() {
     Layout layout(layout_flat, Point(5,5), Point(500, 500));
     HexMap hex_map = HexMap::generate_uncollapsed_hex_map(layout, radius);
 
+    GLFWwindow* window = setup_window();
+
     generate_river(hex_map);
 
     wave_function_collapse(hex_map);
 
     hex_map.print_map();
 
-    GLFWwindow* window = setup_window();
-    render_hex_map(hex_map, window);
     glfwDestroyWindow(window);
     glfwTerminate();
 }
