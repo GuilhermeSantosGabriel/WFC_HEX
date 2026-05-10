@@ -1,7 +1,18 @@
+UNAME_S := $(shell uname -s)
+
 CXX      := g++
 CC       := gcc
 CXXFLAGS := -std=c++17 -O0 -Wall -g -MMD -MP
-LIBS     := -lglfw -lGL -ldl -lpthread -lX11 -lXrandr -lXi
+
+ifeq ($(UNAME_S),Linux)
+    LIBS := -lglfw -lGL -ldl -lpthread -lX11 -lXrandr -lXi
+endif
+ifeq ($(UNAME_S),Darwin)
+    GLFW_PREFIX := /opt/homebrew/opt/glfw
+    LIBS := -L$(GLFW_PREFIX)/lib -lglfw -framework OpenGL -framework Cocoa -framework IOKit -framework CoreVideo
+    INCLUDES += -I$(GLFW_PREFIX)/include
+    CXXFLAGS += -stdlib=libc++
+endif
 
 # Paths
 ROOT_DIR := WFC_Core
@@ -9,7 +20,7 @@ SRC_DIR  := $(ROOT_DIR)/src
 INC_DIR  := $(ROOT_DIR)/include
 BIN_DIR  := bin
 OBJ_DIR  := obj
-INCLUDES := -I$(INC_DIR)
+INCLUDES := -I$(INC_DIR) -I$(INC_DIR)/external
 
 # Source Files
 CORE_SRCS_CPP := $(shell find $(SRC_DIR)/engine $(SRC_DIR)/models -name "*.cpp")
