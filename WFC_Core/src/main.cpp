@@ -5,7 +5,8 @@
 #include "models/hexmap.h"
 #include "engine/river_generator.h"
 #include "engine/wfc.h"
-#include "engine/opengl.h"
+#include "engine/opengl/window_manager.h"
+#include "engine/opengl/hex_renderer.h"
 
 using namespace std;
 
