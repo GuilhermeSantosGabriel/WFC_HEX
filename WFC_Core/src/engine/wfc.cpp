@@ -5,26 +5,14 @@
 #include <stdexcept>
 #include <cassert>
 
-void wave_function_collapse(HexMap& hex_map, GLFWwindow* window, HexRenderer& hex_renderer) {
+WFC::WFC(unsigned int seed) {
+    gen.seed(seed);
+}
 
-    static std::random_device rd;
-    static std::mt19937 gen(rd());
-
-    int n_collapsed = 0;
-    size_t max_collapsed = hex_map.cells.size();
-
+void WFC::wave_function_collapse(HexMap& hex_map, GLFWwindow* window, HexRenderer& hex_renderer) {
     int window_height, window_width;
     int counter = 0;
-    while (n_collapsed < int(max_collapsed)) {
-
-        Cell* cell = lowest_entropy_cell(hex_map);
-        if (!cell) break;
-
-        collapse(*cell, gen);
-        set_height_by_height_factors(*cell);
-        update_neighbors(*cell, hex_map);
-        n_collapsed++;
-
+    while (wfc_step(hex_map)) {
         if (counter == 100) {
             clear_window(window, &window_width, &window_height);
             hex_renderer.draw_hex_map_frame(hex_map, window_width, window_height);
@@ -32,16 +20,21 @@ void wave_function_collapse(HexMap& hex_map, GLFWwindow* window, HexRenderer& he
             counter = 0;
         } else counter++;
     }
-
-    // Keeps window open waiting the user
-    while (!glfwWindowShouldClose(window)) {
-        clear_window(window, &window_width, &window_height);
-        hex_renderer.draw_hex_map_frame(hex_map, window_width, window_height);
-        update_window(window);
-    }
 }
 
-Cell* lowest_entropy_cell(HexMap& hex_map) {
+bool WFC::wfc_step(HexMap& hex_map) {
+
+    Cell* cell = this->lowest_entropy_cell(hex_map);
+    if (!cell) return false;
+
+    this->collapse(*cell);
+    set_height_by_height_factors(*cell);
+    this->update_neighbors(*cell, hex_map);
+
+    return true;
+}
+
+Cell* WFC::lowest_entropy_cell(HexMap& hex_map) {
     Cell* lowest = nullptr;
     for (auto &c : hex_map.cells) {
         if (!c.collapsed) {
@@ -51,16 +44,16 @@ Cell* lowest_entropy_cell(HexMap& hex_map) {
     return lowest;
 }
 
-void collapse(Cell& cell, std::mt19937 &gen) {
+void WFC::collapse(Cell& cell) {
 
     if (cell.possible_tiles.empty())
         throw std::runtime_error("WFC Error: A cell has zero possible tiles.");
 
-    int tile = random_weighted_tile(cell, gen);
+    int tile = this->random_weighted_tile(cell);
     cell.collapse(tile);
 }
 
-int random_weighted_tile(Cell& cell, std::mt19937 &gen) {
+int WFC::random_weighted_tile(Cell& cell) {
 
     int total_weight = 0;
     std::map<int, int> current_weights;
@@ -73,7 +66,7 @@ int random_weighted_tile(Cell& cell, std::mt19937 &gen) {
     }
 
     std::uniform_int_distribution<> dis(0, total_weight - 1);
-    int random_roll = dis(gen);
+    int random_roll = dis(this->gen);
 
     int chosen_tile = *cell.possible_tiles.begin();
     int cumulative_sum = 0;
@@ -89,7 +82,7 @@ int random_weighted_tile(Cell& cell, std::mt19937 &gen) {
     return chosen_tile;
 }
 
-void update_neighbors(Cell& cell, HexMap& hex_map) {
+void WFC::update_neighbors(Cell& cell, HexMap& hex_map) {
     for (Cell* neighbor : hex_map.get_neighbors(cell)) {
         if (!neighbor->collapsed) {
             std::set<int> allowed;

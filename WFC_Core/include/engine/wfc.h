@@ -9,14 +9,25 @@
 
 #include <random>
 
-void wave_function_collapse(HexMap& hex_map, GLFWwindow* window, HexRenderer& hex_renderer);
 
-Cell* lowest_entropy_cell(HexMap& hex_map);
 
-void collapse(Cell& cell, std::mt19937 &gen);
 
-int random_weighted_tile(Cell& cell, std::mt19937 &gen);
+class WFC{
+private:
+    inline static std::mt19937 gen;
 
-void update_neighbors(Cell& cell, HexMap& hex_map);
+public:
+    WFC(unsigned int seed);
+
+    void wave_function_collapse(HexMap& hex_map, GLFWwindow* window, HexRenderer& hex_renderer);
+
+    bool wfc_step(HexMap& hex_map);
+
+    Cell* lowest_entropy_cell(HexMap& hex_map);
+    void collapse(Cell& cell);
+    int random_weighted_tile(Cell& cell);
+    void update_neighbors(Cell& cell, HexMap& hex_map);
+};
+
 
 #endif
