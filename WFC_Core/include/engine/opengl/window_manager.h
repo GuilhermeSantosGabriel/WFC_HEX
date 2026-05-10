@@ -10,4 +10,8 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 
 GLFWwindow* setup_window();
 
+void clear_window(GLFWwindow* window, int* width, int* height);
+
+void update_window(GLFWwindow* window);
+
 #endif

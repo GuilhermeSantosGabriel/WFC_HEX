@@ -1,4 +1,5 @@
 #include "engine/wfc.h"
+#include "engine/opengl/window_manager.h"
 #include "engine/opengl/hex_renderer.h"
 #include <stdexcept>
 #include <cassert>
@@ -11,6 +12,8 @@ void wave_function_collapse(HexMap& hex_map, GLFWwindow* window, HexRenderer& he
     int n_collapsed = 0;
     size_t max_collapsed = hex_map.cells.size();
 
+    int window_height, window_width;
+    int counter = 0;
     while (n_collapsed < int(max_collapsed)) {
 
         Cell* cell = lowest_entropy_cell(hex_map);
@@ -21,38 +24,19 @@ void wave_function_collapse(HexMap& hex_map, GLFWwindow* window, HexRenderer& he
         update_neighbors(*cell, hex_map);
         n_collapsed++;
 
-        // Clears buffer
-        glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
-
-        // Deals with window resizing
-        int width, height;
-        glfwGetFramebufferSize(window, &width, &height);
-
-        // Draw a single HexMap frame
-        hex_renderer.draw_hex_map_frame(hex_map, width, height);
-
-        // Send the new frame to the screen
-        glfwSwapBuffers(window);
-        glfwPollEvents();
+        if (counter == 100) {
+            clear_window(window, &window_width, &window_height);
+            hex_renderer.draw_hex_map_frame(hex_map, window_width, window_height);
+            update_window(window);
+            counter = 0;
+        } else counter++;
     }
 
     // Keeps window open waiting the user
     while (!glfwWindowShouldClose(window)) {
-
-        // Clears buffer
-        glClear(GL_COLOR_BUFFER_BIT);
-
-        // Deals with window resizing
-        int width, height;
-        glfwGetFramebufferSize(window, &width, &height);
-
-        // Draw a single HexMap frame
-        hex_renderer.draw_hex_map_frame(hex_map, width, height);
-
-        // Send the new frame to the screen
-        glfwSwapBuffers(window);
-        glfwPollEvents();
+        clear_window(window, &window_width, &window_height);
+        hex_renderer.draw_hex_map_frame(hex_map, window_width, window_height);
+        update_window(window);
     }
 }
 
