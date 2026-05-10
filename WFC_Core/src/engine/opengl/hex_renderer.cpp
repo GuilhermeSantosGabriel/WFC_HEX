@@ -114,7 +114,7 @@ void HexRenderer::draw_hex_map_frame(HexMap& hex_map, int width, int height) {
 
         // Sends cell data to shader
         glUniform2f(glGetUniformLocation(shader_program, "offset"), (float)cell.x, (float)cell.y);
-        // glUniform3f(glGetUniformLocation(shader_program, "color"), color.x, color.y, color.z);
+        glUniform3f(glGetUniformLocation(shader_program, "color"), color.x, color.y, color.z);
 
         // Draws the hex using triangle fan with 8 vertices
         // center + 6 corners + closing
