@@ -4,10 +4,12 @@
 #include "models/hexmap.h"
 #include "models/cell.h"
 #include "engine/rules.h"
+#include "engine/opengl/window_manager.h"
+#include "engine/opengl/hex_renderer.h"
 
 #include <random>
 
-void wave_function_collapse(HexMap& hex_map);
+void wave_function_collapse(HexMap& hex_map, GLFWwindow* window, HexRenderer& hex_renderer);
 
 Cell* lowest_entropy_cell(HexMap& hex_map);
 

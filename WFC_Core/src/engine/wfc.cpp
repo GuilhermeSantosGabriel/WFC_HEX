@@ -1,8 +1,9 @@
 #include "engine/wfc.h"
+#include "engine/opengl/hex_renderer.h"
 #include <stdexcept>
 #include <cassert>
 
-void wave_function_collapse(HexMap& hex_map) {
+void wave_function_collapse(HexMap& hex_map, GLFWwindow* window, HexRenderer& hex_renderer) {
 
     static std::random_device rd;
     static std::mt19937 gen(rd());
@@ -11,16 +12,47 @@ void wave_function_collapse(HexMap& hex_map) {
     size_t max_collapsed = hex_map.cells.size();
 
     while (n_collapsed < int(max_collapsed)) {
+
         Cell* cell = lowest_entropy_cell(hex_map);
         if (!cell) break;
 
         collapse(*cell, gen);
-
         set_height(*cell);
-
         update_neighbors(*cell, hex_map);
-
         n_collapsed++;
+
+        // Clears buffer
+        glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        // Deals with window resizing
+        int width, height;
+        glfwGetFramebufferSize(window, &width, &height);
+
+        // Draw a single HexMap frame
+        hex_renderer.draw_hex_map_frame(hex_map, width, height);
+
+        // Send the new frame to the screen
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+    }
+
+    // Keeps window open waiting the user
+    while (!glfwWindowShouldClose(window)) {
+
+        // Clears buffer
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        // Deals with window resizing
+        int width, height;
+        glfwGetFramebufferSize(window, &width, &height);
+
+        // Draw a single HexMap frame
+        hex_renderer.draw_hex_map_frame(hex_map, width, height);
+
+        // Send the new frame to the screen
+        glfwSwapBuffers(window);
+        glfwPollEvents();
     }
 }
 
