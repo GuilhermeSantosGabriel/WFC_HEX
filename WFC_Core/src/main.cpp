@@ -23,10 +23,11 @@ int main() {
 
     GLFWwindow* window = setup_window();
     HexRenderer hex_renderer = HexRenderer(4);
+    WFC wfc = WFC(27);
 
     generate_river(hex_map, true, window, hex_renderer);
 
-    wave_function_collapse(hex_map, window, hex_renderer);
+    wfc.wave_function_collapse(hex_map, window, hex_renderer);
 
     hex_map.print_map();
 
