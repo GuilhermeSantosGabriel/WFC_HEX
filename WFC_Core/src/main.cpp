@@ -22,6 +22,7 @@ int main() {
     HexMap hex_map = HexMap::generate_uncollapsed_hex_map(layout, radius);
 
     GLFWwindow* window = setup_window();
+    HexRenderer hex_renderer = HexRenderer(4);
 
     generate_river(hex_map);
 
