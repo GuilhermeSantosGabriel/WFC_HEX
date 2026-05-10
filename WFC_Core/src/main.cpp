@@ -26,7 +26,7 @@ int main() {
 
     generate_river(hex_map);
 
-    wave_function_collapse(hex_map);
+    wave_function_collapse(hex_map, window, hex_renderer);
 
     hex_map.print_map();
 
