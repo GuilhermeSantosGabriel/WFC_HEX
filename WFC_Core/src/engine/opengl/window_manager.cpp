@@ -34,3 +34,20 @@ GLFWwindow* setup_window() {
 
     return window;
 }
+
+void clear_window(GLFWwindow* window, int* width, int* height) {
+
+    // Clears buffer
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    // Deals with window resizing
+    glfwGetFramebufferSize(window, width, height);
+}
+
+void update_window(GLFWwindow* window) {
+    // Send the new frame to the screen
+    glfwSwapBuffers(window);
+    glfwPollEvents();
+}
+
