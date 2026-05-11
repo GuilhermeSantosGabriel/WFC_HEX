@@ -3,13 +3,13 @@
 #include "engine/noises/ridged_multifractal.h"
 #include "engine/height_dealer.h"
 
-void generate_river(HexMap& hex_map, bool sand_margin, GLFWwindow* window, HexRenderer& hex_renderer) {
+void generate_river(HexMap& hex_map, bool sand_margin, GLFWwindow* window, HexRenderer& hex_renderer, PerlinNoise& perlin, RidgedNoise& ridged) {
 
     int window_width, window_height;
     int counter = 0;
     for (auto &c : hex_map.cells){
 
-        generate_river_step(c, sand_margin);
+        generate_river_step(c, sand_margin, perlin, ridged);
 
         if (counter == 100) {
             clear_window(window, &window_width, &window_height);
@@ -20,7 +20,7 @@ void generate_river(HexMap& hex_map, bool sand_margin, GLFWwindow* window, HexRe
     }
 }
 
-void generate_river_step(Cell& c, bool sand_margin) {
+void generate_river_step(Cell& c, bool sand_margin, PerlinNoise& perlin, RidgedNoise& ridged) {
 
     float base = 0.0f;
     float amplitude = 400.0f;
@@ -28,7 +28,7 @@ void generate_river_step(Cell& c, bool sand_margin) {
 
     float water_height = 15;
 
-    float ridged_value = 1 - ridged_multifractal(
+    float ridged_value = 1 - ridged.sample(
         c.get_q()*frequency, c.get_r()*frequency
     );
 
@@ -47,5 +47,5 @@ void generate_river_step(Cell& c, bool sand_margin) {
         return;
     }
 
-    set_height_by_height_factors(c);
+    set_height_by_height_factors(c, perlin);
 }

@@ -6,6 +6,7 @@
 #include "engine/rules.h"
 #include "engine/opengl/window_manager.h"
 #include "engine/opengl/hex_renderer.h"
+#include "engine/noises/perlin.h"
 
 #include <random>
 
@@ -16,9 +17,9 @@ private:
 public:
     WFC(unsigned int seed);
 
-    void wave_function_collapse(HexMap& hex_map, GLFWwindow* window, HexRenderer& hex_renderer);
+    void wave_function_collapse(HexMap& hex_map, GLFWwindow* window, HexRenderer& hex_renderer, PerlinNoise& perlin);
 
-    bool wfc_step(HexMap& hex_map);
+    bool wfc_step(HexMap& hex_map, PerlinNoise& perlin);
 
     Cell* lowest_entropy_cell(HexMap& hex_map);
     void collapse(Cell& cell);

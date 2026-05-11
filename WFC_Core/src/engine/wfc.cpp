@@ -9,10 +9,10 @@ WFC::WFC(unsigned int seed) {
     gen.seed(seed);
 }
 
-void WFC::wave_function_collapse(HexMap& hex_map, GLFWwindow* window, HexRenderer& hex_renderer) {
+void WFC::wave_function_collapse(HexMap& hex_map, GLFWwindow* window, HexRenderer& hex_renderer, PerlinNoise& perlin) {
     int window_height, window_width;
     int counter = 0;
-    while (wfc_step(hex_map)) {
+    while (wfc_step(hex_map, perlin)) {
         if (counter == 100) {
             clear_window(window, &window_width, &window_height);
             hex_renderer.draw_hex_map_frame(hex_map, window_width, window_height);
@@ -22,13 +22,13 @@ void WFC::wave_function_collapse(HexMap& hex_map, GLFWwindow* window, HexRendere
     }
 }
 
-bool WFC::wfc_step(HexMap& hex_map) {
+bool WFC::wfc_step(HexMap& hex_map, PerlinNoise& perlin) {
 
     Cell* cell = this->lowest_entropy_cell(hex_map);
     if (!cell) return false;
 
     this->collapse(*cell);
-    set_height_by_height_factors(*cell);
+    set_height_by_height_factors(*cell, perlin);
     this->update_neighbors(*cell, hex_map);
 
     return true;

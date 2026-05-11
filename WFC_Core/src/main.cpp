@@ -5,6 +5,8 @@
 #include "models/hexmap.h"
 #include "engine/river_generator.h"
 #include "engine/wfc.h"
+#include "engine/noises/perlin.h"
+#include "engine/noises/ridged_multifractal.h"
 #include "engine/opengl/window_manager.h"
 #include "engine/opengl/hex_renderer.h"
 
@@ -23,11 +25,15 @@ int main() {
 
     GLFWwindow* window = setup_window();
     HexRenderer hex_renderer = HexRenderer(4);
-    WFC wfc = WFC(27);
 
-    generate_river(hex_map, true, window, hex_renderer);
+    unsigned int seed = 27;
+    WFC wfc = WFC(seed);
+    PerlinNoise perlin(seed);
+    RidgedNoise ridged(seed);
 
-    wfc.wave_function_collapse(hex_map, window, hex_renderer);
+    generate_river(hex_map, true, window, hex_renderer, perlin, ridged);
+
+    wfc.wave_function_collapse(hex_map, window, hex_renderer, perlin);
 
     hex_map.print_map();
 
