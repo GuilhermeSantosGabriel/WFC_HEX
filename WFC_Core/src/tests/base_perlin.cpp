@@ -24,11 +24,13 @@ int main() {
     float amplitude = 70.0f;
     float frequency = 0.1f;
 
+    PerlinNoise perlin(27);
+
     for (auto &c : hex_map.cells){
 
         c.set_height(
-            (int)(base + amplitude * normalized_perlin(
-                c.get_q(), c.get_r(), frequency
+            (int)(base + amplitude * perlin.normalized_perlin(
+                c.get_q() * frequency, c.get_r() * frequency
             ))
         );
     }

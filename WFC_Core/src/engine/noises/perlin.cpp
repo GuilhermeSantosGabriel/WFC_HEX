@@ -1,22 +1,21 @@
+#include "engine/noises/perlin.h"
 #include "models/cell.h"
 #include "engine/hex_to_pixels.h"
 #include "engine/wfc.h"
-
-using namespace std;
 
 /*
     ALL OF THESE FUNCTIONS WERE BASED ON https://www.youtube.com/watch?v=kCIaHqb60Cw
 */
 
-typedef struct {
-    float x, y;
-} vector2;
+Vector2 PerlinNoise::randomGradient(int ix, int iy) {
 
-vector2 randomGradient(int ix, int iy) {
     // No precomputed gradients mean this works for any number of grid coordinates
     const unsigned w = 8 * sizeof(unsigned);
-    const unsigned s = w / 2; 
-    unsigned a = ix, b = iy;
+    const unsigned s = w / 2;
+
+    unsigned a = ix + seed;
+    unsigned b = iy + seed;
+
     a *= 3284157443;
 
     b ^= a << s | a >> (w - s);
@@ -27,16 +26,17 @@ vector2 randomGradient(int ix, int iy) {
     float random = a * (3.14159265 / ~(~0u >> 1)); // in [0, 2*Pi]
 
     // Create the vector from the angle
-    vector2 v;
+    Vector2 v;
     v.x = sin(random);
     v.y = cos(random);
 
     return v;
 }
 
-float dotGridGradient(int ix, int iy, float x, float y) {
+float PerlinNoise::dotGridGradient(int ix, int iy, float x, float y) {
+
     // Get gradient from integer coordinates
-    vector2 gradient = randomGradient(ix, iy);
+    Vector2 gradient = randomGradient(ix, iy);
 
     // Compute the distance vector
     float dx = x - (float)ix;
@@ -46,12 +46,12 @@ float dotGridGradient(int ix, int iy, float x, float y) {
     return (dx * gradient.x + dy * gradient.y);
 }
 
-float interpolate(float a0, float a1, float w) {
+float PerlinNoise::interpolate(float a0, float a1, float w) {
     return (a1 - a0) * (3.0 - w * 2.0) * w * w + a0;
 }
 
 // Sample Perlin noise at coordinates x, y
-float perlin(float x, float y) {
+float PerlinNoise::sample(float x, float y) {
 
     // Determine grid cell corner coordinates
     int x0 = (int)std::floor(x); 
@@ -79,6 +79,6 @@ float perlin(float x, float y) {
     return value;
 }
 
-float normalized_perlin(float x, float y, float frequency) {
-    return (perlin(x * frequency, y * frequency) + 1.0f) / 2.0f;
+float PerlinNoise::normalized_perlin(float x, float y) {
+    return (sample(x, y) + 1.0f) / 2.0f;
 }

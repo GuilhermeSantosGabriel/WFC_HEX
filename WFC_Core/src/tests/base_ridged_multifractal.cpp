@@ -18,6 +18,9 @@ int main() {
     Layout layout(layout_flat, Point(5,5), Point(500, 500));
     HexMap hex_map = HexMap::generate_empty_hex_map(layout, radius);
 
+    unsigned int seed = 27;
+    RidgedNoise ridged(seed);
+
     float base = 0.0f;
     float amplitude = 120.0f;
     float frequency = 0.1f;
@@ -25,7 +28,7 @@ int main() {
 
     for (auto &c : hex_map.cells){
 
-        ridged_value = ridged_multifractal(
+        ridged_value = ridged.sample(
             c.get_q()*frequency, c.get_r()*frequency
         );
 

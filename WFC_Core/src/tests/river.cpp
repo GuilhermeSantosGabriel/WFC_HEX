@@ -21,7 +21,15 @@ int main() {
     GLFWwindow* window = setup_window();
     HexRenderer hex_renderer = HexRenderer(4);
 
-    generate_river(hex_map, true, window, hex_renderer);
+    unsigned int seed = 27;
+    PerlinNoise perlin(seed);
+    RidgedNoise ridged(seed);
+
+    generate_river(hex_map, false, window, hex_renderer, perlin, ridged);
+
+    for (auto &cell : hex_map.cells) {
+        if (!cell.collapsed) cell.collapse(EMPTY);
+    }
 
     hex_map.print_map();
 
