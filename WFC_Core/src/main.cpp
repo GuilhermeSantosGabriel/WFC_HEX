@@ -6,9 +6,7 @@
 #include "engine/generators/generators.h"
 #include "engine/noises/perlin.h"
 #include "engine/noises/ridged_multifractal.h"
-#include "engine/opengl/window_manager.h"
-#include "engine/opengl/hex_renderer.h"
-#include "engine/opengl/simulation_runner.h"
+#include "engine/render/render.h"
 
 using namespace std;
 

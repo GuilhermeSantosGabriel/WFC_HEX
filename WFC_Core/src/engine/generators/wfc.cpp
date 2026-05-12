@@ -1,7 +1,6 @@
 #include "engine/generators/wfc.h"
 
-#include "engine/opengl/window_manager.h"
-#include "engine/opengl/hex_renderer.h"
+#include "engine/render/render.h"
 #include "engine/height_dealer.h"
 
 #include <stdexcept>

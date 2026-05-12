@@ -4,8 +4,6 @@
 #include "engine/hex_to_pixels.h"
 #include "models/hexmap.h"
 #include "engine/generators/generators.h"
-#include "engine/opengl/window_manager.h"
-#include "engine/opengl/hex_renderer.h"
 
 using namespace std;
 

@@ -1,4 +1,4 @@
-#include "engine/opengl/simulation_runner.h"
+#include "engine/render/render.h"
 
 void run_step_visual_simulation(
     GLFWwindow* window,

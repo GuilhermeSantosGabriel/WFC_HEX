@@ -5,8 +5,6 @@
 #include "models/hexmap.h"
 #include "models/cell.h"
 #include "engine/rules.h"
-#include "engine/opengl/window_manager.h"
-#include "engine/opengl/hex_renderer.h"
 #include "engine/noises/perlin.h"
 
 #include <random>
