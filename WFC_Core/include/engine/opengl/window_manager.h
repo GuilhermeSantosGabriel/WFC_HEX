@@ -14,4 +14,6 @@ void clear_window(GLFWwindow* window, int* width, int* height);
 
 void update_window(GLFWwindow* window);
 
+void terminate_window(GLFWwindow* window);
+
 #endif
