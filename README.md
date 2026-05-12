@@ -1,6 +1,6 @@
 # WFC_HEX
 
-A procedural world generator using Wave Function Collapse (WFC) and Noise Algorithms (Perlin, Ridged Multifractal) implemented on a hexagonal grid. This project combines a high-performance C++ core with Python scripts for high-quality 2D and 2.5D (Isometric) visualizations.
+A procedural world generator using Wave Function Collapse (WFC) and Noise Algorithms (Perlin, Ridged Multifractal) implemented on a hexagonal grid. This project combines a high-performance C++ core using OpenGL with Python scripts for high-quality 2D and 2.5D (Isometric) visualizations.
 
 <p align="center">
     <img src="./docs/assets/readme/example.png" width="60%" alt="Water Ruleset Example">
@@ -12,6 +12,8 @@ A procedural world generator using Wave Function Collapse (WFC) and Noise Algori
 - Hexagonal Grid Engine: Robust axial and cube coordinate logic.
 - Wave Function Collapse: Advanced tile adjacency constraints for consistent world generation.
 - Noise Generation: Integrated Perlin and Ridged Multifractal noise for heightmaps and biome distribution.
+- OpenGL Rendering: Opens a window showing the generation progress of the map.
+- Seeds: Both WFC and Noises randomizer can use a seed to get the same result every time.
 - 2D & Isometric Visualization: Automated rendering using OpenCV and NumPy.
 - Developer Tools: Complete CLI pipeline for testing and visualization.
 
