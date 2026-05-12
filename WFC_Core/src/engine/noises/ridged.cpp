@@ -1,4 +1,4 @@
-#include "engine/noises/ridged_multifractal.h"
+#include "engine/noises/ridged.h"
 
 float RidgedNoise::sample(float x, float y) {
     float value = this->perlin_base.sample(x,y);

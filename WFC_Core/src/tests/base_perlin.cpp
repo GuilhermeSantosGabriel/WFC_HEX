@@ -3,7 +3,7 @@
 #include "engine/rules.h"
 #include "engine/hex_to_pixels.h"
 #include "models/hexmap.h"
-#include "engine/noises/perlin.h"
+#include "engine/noises/noises.h"
 
 using namespace std;
 

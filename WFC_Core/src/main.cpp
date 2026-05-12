@@ -4,8 +4,7 @@
 #include "engine/hex_to_pixels.h"
 #include "models/hexmap.h"
 #include "engine/generators/generators.h"
-#include "engine/noises/perlin.h"
-#include "engine/noises/ridged_multifractal.h"
+#include "engine/noises/noises.h"
 #include "engine/render/render.h"
 
 using namespace std;

@@ -5,7 +5,7 @@
 #include "models/hexmap.h"
 #include "models/cell.h"
 #include "engine/rules.h"
-#include "engine/noises/perlin.h"
+#include "engine/noises/noises.h"
 
 #include <random>
 
