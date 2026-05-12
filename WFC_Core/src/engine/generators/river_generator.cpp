@@ -1,7 +1,7 @@
 #include "engine/generators/river_generator.h"
 
 #include "engine/rules.h"
-#include "engine/noises/ridged_multifractal.h"
+#include "engine/noises/noises.h"
 #include "engine/height_dealer.h"
 
 

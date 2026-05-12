@@ -1,6 +1,6 @@
 #include "engine/height_dealer.h"
 #include "engine/rules.h"
-#include "engine/noises/perlin.h"
+#include "engine/noises/noises.h"
 #include <cassert>
 
 void set_height_by_height_factors(Cell& cell, PerlinNoise& perlin) {

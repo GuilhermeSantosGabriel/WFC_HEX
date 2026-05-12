@@ -3,9 +3,8 @@
 
 #include "engine/generators/interface/step_generator.h"
 #include "models/hexmap.h"
-#include "engine/noises/perlin.h"
-#include "engine/noises/ridged_multifractal.h"
 #include "engine/render/render.h"
+#include "engine/noises/noises.h"
 
 
 class RiverGenerator : public StepGenerator {
