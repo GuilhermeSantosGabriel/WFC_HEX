@@ -55,3 +55,7 @@ void update_window(GLFWwindow* window) {
     glfwPollEvents();
 }
 
+void terminate_window(GLFWwindow* window) {
+    glfwDestroyWindow(window);
+    glfwTerminate();
+}

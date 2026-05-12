@@ -37,6 +37,5 @@ int main() {
 
     hex_map.print_map();
 
-    glfwDestroyWindow(window);
-    glfwTerminate();
+    terminate_window(window);
 }
