@@ -9,6 +9,7 @@
 #include "engine/noises/ridged_multifractal.h"
 #include "engine/opengl/window_manager.h"
 #include "engine/opengl/hex_renderer.h"
+#include "engine/opengl/simulation_runner.h"
 
 using namespace std;
 
@@ -27,13 +28,28 @@ int main() {
     HexRenderer hex_renderer = HexRenderer(4);
 
     unsigned int seed = 27;
-    WFC wfc = WFC(seed);
-    PerlinNoise perlin(seed);
-    RidgedNoise ridged(seed);
+    PerlinNoise height_factor_perlin(seed);
+    RidgedNoise river_ridged(seed);
 
-    generate_river(hex_map, true, window, hex_renderer, perlin, ridged);
+    RiverGenerator river_gen(
+        hex_map, true,
+        height_factor_perlin, river_ridged
+    );
+    run_visual_simulation(
+        window, hex_renderer, 10000, hex_map, [&]() {
+            return river_gen.step();
+    });
+    // river_gen.generate_river();
 
-    wfc.wave_function_collapse(hex_map, window, hex_renderer, perlin);
+    WFC wfc(
+        hex_map, seed,
+        height_factor_perlin
+    );
+    run_visual_simulation(
+        window, hex_renderer, 10000, hex_map, [&]() {
+            return wfc.step();
+    });
+    // wfc.wave_function_collapse();
 
     hex_map.print_map();
 
