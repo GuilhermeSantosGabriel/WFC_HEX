@@ -5,36 +5,30 @@
 #include <stdexcept>
 #include <cassert>
 
-WFC::WFC(unsigned int seed) {
-    gen.seed(seed);
+WFC::WFC(HexMap& hex_map_s, unsigned int wfc_seed, PerlinNoise& hf_perlin)
+: hex_map(hex_map_s), height_factor_perlin(hf_perlin) {
+    gen.seed(wfc_seed);
 }
 
-void WFC::wave_function_collapse(HexMap& hex_map, GLFWwindow* window, HexRenderer& hex_renderer, PerlinNoise& perlin) {
-    int window_height, window_width;
-    int counter = 0;
-    while (wfc_step(hex_map, perlin)) {
-        if (counter == 100) {
-            clear_window(window, &window_width, &window_height);
-            hex_renderer.draw_hex_map_frame(hex_map, window_width, window_height);
-            update_window(window);
-            counter = 0;
-        } else counter++;
-    }
+void WFC::wave_function_collapse() {
+    while (step());
 }
 
-bool WFC::wfc_step(HexMap& hex_map, PerlinNoise& perlin) {
+bool WFC::step() {
 
-    Cell* cell = this->lowest_entropy_cell(hex_map);
+    Cell* cell = this->lowest_entropy_cell();
     if (!cell) return false;
 
-    this->collapse(*cell);
-    set_height_by_height_factors(*cell, perlin);
-    this->update_neighbors(*cell, hex_map);
+    this->wfc_collapse(*cell);
+    this->update_neighbors(*cell);
+    set_height_by_height_factors(
+        *cell, this->height_factor_perlin
+    );
 
     return true;
 }
 
-Cell* WFC::lowest_entropy_cell(HexMap& hex_map) {
+Cell* WFC::lowest_entropy_cell() {
     Cell* lowest = nullptr;
     for (auto &c : hex_map.cells) {
         if (!c.collapsed) {
@@ -44,7 +38,7 @@ Cell* WFC::lowest_entropy_cell(HexMap& hex_map) {
     return lowest;
 }
 
-void WFC::collapse(Cell& cell) {
+void WFC::wfc_collapse(Cell& cell) {
 
     if (cell.possible_tiles.empty())
         throw std::runtime_error("WFC Error: A cell has zero possible tiles.");
@@ -82,7 +76,7 @@ int WFC::random_weighted_tile(Cell& cell) {
     return chosen_tile;
 }
 
-void WFC::update_neighbors(Cell& cell, HexMap& hex_map) {
+void WFC::update_neighbors(Cell& cell) {
     for (Cell* neighbor : hex_map.get_neighbors(cell)) {
         if (!neighbor->collapsed) {
             std::set<int> allowed;
