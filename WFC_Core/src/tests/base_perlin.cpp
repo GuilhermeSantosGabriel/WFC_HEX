@@ -3,9 +3,6 @@
 #include "engine/rules.h"
 #include "engine/hex_to_pixels.h"
 #include "models/hexmap.h"
-#include "engine/river_generator.h"
-#include "engine/wfc.h"
-
 #include "engine/noises/perlin.h"
 
 using namespace std;

@@ -3,8 +3,6 @@
 #include "engine/rules.h"
 #include "engine/hex_to_pixels.h"
 #include "models/hexmap.h"
-#include "engine/river_generator.h"
-#include "engine/wfc.h"
 #include "engine/noises/ridged_multifractal.h"
 
 using namespace std;

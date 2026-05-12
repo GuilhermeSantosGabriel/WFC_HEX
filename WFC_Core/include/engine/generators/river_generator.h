@@ -1,6 +1,7 @@
 #ifndef RIVER_GENERATOR_H
 #define RIVER_GENERATOR_H
 
+#include "engine/generators/interface/step_generator.h"
 #include "models/hexmap.h"
 #include "engine/opengl/window_manager.h"
 #include "engine/opengl/hex_renderer.h"
@@ -8,7 +9,7 @@
 #include "engine/noises/ridged_multifractal.h"
 
 
-class RiverGenerator {
+class RiverGenerator : public StepGenerator {
 private:
 
     HexMap& hex_map;

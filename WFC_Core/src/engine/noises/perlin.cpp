@@ -1,7 +1,7 @@
 #include "engine/noises/perlin.h"
-#include "models/cell.h"
-#include "engine/hex_to_pixels.h"
-#include "engine/wfc.h"
+
+#include <cmath>
+
 
 /*
     ALL OF THESE FUNCTIONS WERE BASED ON https://www.youtube.com/watch?v=kCIaHqb60Cw

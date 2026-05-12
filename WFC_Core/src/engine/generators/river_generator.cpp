@@ -1,7 +1,9 @@
+#include "engine/generators/river_generator.h"
+
 #include "engine/rules.h"
-#include "engine/river_generator.h"
 #include "engine/noises/ridged_multifractal.h"
 #include "engine/height_dealer.h"
+
 
 RiverGenerator::RiverGenerator(
     HexMap& hex_map_s, bool sand_margin_s,

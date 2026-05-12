@@ -3,8 +3,7 @@
 #include "engine/rules.h"
 #include "engine/hex_to_pixels.h"
 #include "models/hexmap.h"
-#include "engine/river_generator.h"
-#include "engine/wfc.h"
+#include "engine/generators/generators.h"
 #include "engine/noises/perlin.h"
 #include "engine/noises/ridged_multifractal.h"
 #include "engine/opengl/window_manager.h"
@@ -35,20 +34,18 @@ int main() {
         hex_map, true,
         height_factor_perlin, river_ridged
     );
-    run_visual_simulation(
-        window, hex_renderer, 10000, hex_map, [&]() {
-            return river_gen.step();
-    });
+    run_step_visual_simulation(
+        window, hex_renderer, 100, hex_map, river_gen
+    );
     // river_gen.generate_river();
 
     WFC wfc(
         hex_map, seed,
         height_factor_perlin
     );
-    run_visual_simulation(
-        window, hex_renderer, 10000, hex_map, [&]() {
-            return wfc.step();
-    });
+    run_step_visual_simulation(
+        window, hex_renderer, 100, hex_map, wfc
+    );
     // wfc.wave_function_collapse();
 
     hex_map.print_map();

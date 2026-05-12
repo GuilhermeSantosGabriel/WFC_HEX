@@ -1,9 +1,13 @@
-#include "engine/wfc.h"
+#include "engine/generators/wfc.h"
+
 #include "engine/opengl/window_manager.h"
 #include "engine/opengl/hex_renderer.h"
 #include "engine/height_dealer.h"
+
 #include <stdexcept>
 #include <cassert>
+
+
 
 WFC::WFC(HexMap& hex_map_s, unsigned int wfc_seed, PerlinNoise& hf_perlin)
 : hex_map(hex_map_s), height_factor_perlin(hf_perlin) {
