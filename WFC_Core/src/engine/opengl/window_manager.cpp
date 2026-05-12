@@ -1,4 +1,4 @@
-#include "engine/opengl/window_manager.h"
+#include "engine/render/render.h"
 
 #include <stdexcept>
 
