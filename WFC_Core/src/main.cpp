@@ -7,13 +7,11 @@
 #include "engine/noises/noises.h"
 #include "engine/render/render.h"
 
-using namespace std;
-
 int main() {
 
     int radius;
-    cerr << "Type map radius (size): ";
-    cin >> radius;
+    std::cerr << "Type map radius (size): ";
+    std::cin >> radius;
 
     validate_constraints();
 
