@@ -3,24 +3,25 @@
 #include "engine/noises/ridged_multifractal.h"
 #include "engine/height_dealer.h"
 
-void generate_river(HexMap& hex_map, bool sand_margin, GLFWwindow* window, HexRenderer& hex_renderer, PerlinNoise& perlin, RidgedNoise& ridged) {
+RiverGenerator::RiverGenerator(
+    HexMap& hex_map_s, bool sand_margin_s,
+    PerlinNoise& hf_perlin, RidgedNoise& r_ridged
+):
+    hex_map(hex_map_s), sand_margin(sand_margin_s),
+    height_factors_perlin(hf_perlin), river_ridged(r_ridged)
+{}
 
-    int window_width, window_height;
-    int counter = 0;
-    for (auto &c : hex_map.cells){
-
-        generate_river_step(c, sand_margin, perlin, ridged);
-
-        if (counter == 100) {
-            clear_window(window, &window_width, &window_height);
-            hex_renderer.draw_hex_map_frame(hex_map, window_width, window_height);
-            update_window(window);
-            counter = 0;
-        } else counter++;
-    }
+void RiverGenerator::generate_river() {
+    while(step());
 }
 
-void generate_river_step(Cell& c, bool sand_margin, PerlinNoise& perlin, RidgedNoise& ridged) {
+bool RiverGenerator::step() {
+
+    if (this->current_index >= hex_map.cells.size()) {
+        return false;
+    }
+
+    Cell& c = hex_map.cells[this->current_index];
 
     float base = 0.0f;
     float amplitude = 400.0f;
@@ -28,7 +29,7 @@ void generate_river_step(Cell& c, bool sand_margin, PerlinNoise& perlin, RidgedN
 
     float water_height = 15;
 
-    float ridged_value = 1 - ridged.sample(
+    float ridged_value = 1 - river_ridged.sample(
         c.get_q()*frequency, c.get_r()*frequency
     );
 
@@ -44,8 +45,12 @@ void generate_river_step(Cell& c, bool sand_margin, PerlinNoise& perlin, RidgedN
         c.possible_tiles = {GRASS, SAND, FOREST};
         c.entropy = 3;
         c.collapsed = false;
-        return;
+        this->current_index++;
+        return true;
     }
 
-    set_height_by_height_factors(c, perlin);
+    set_height_by_height_factors(c, height_factors_perlin);
+
+    this->current_index++;
+    return true;
 }

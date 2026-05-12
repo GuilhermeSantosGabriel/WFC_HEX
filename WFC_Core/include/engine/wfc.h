@@ -12,19 +12,24 @@
 
 class WFC{
 private:
+
+    HexMap& hex_map;
+
+    PerlinNoise& height_factor_perlin;
+
     inline static std::mt19937 gen;
 
 public:
-    WFC(unsigned int seed);
+    WFC(HexMap& hex_map_s, unsigned int wfc_seed, PerlinNoise& hf_perlin);
 
-    void wave_function_collapse(HexMap& hex_map, GLFWwindow* window, HexRenderer& hex_renderer, PerlinNoise& perlin);
+    void wave_function_collapse();
 
-    bool wfc_step(HexMap& hex_map, PerlinNoise& perlin);
+    bool step();
 
-    Cell* lowest_entropy_cell(HexMap& hex_map);
-    void collapse(Cell& cell);
+    Cell* lowest_entropy_cell();
+    void wfc_collapse(Cell& cell);
     int random_weighted_tile(Cell& cell);
-    void update_neighbors(Cell& cell, HexMap& hex_map);
+    void update_neighbors(Cell& cell);
 };
 
 #endif
