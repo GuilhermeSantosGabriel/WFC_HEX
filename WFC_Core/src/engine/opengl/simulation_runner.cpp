@@ -1,17 +1,20 @@
 #include "engine/opengl/simulation_runner.h"
 
-void run_visual_simulation(
+void run_step_visual_simulation(
     GLFWwindow* window,
     HexRenderer& hex_renderer,
     unsigned int step_counter,
     HexMap& hex_map,
-    std::function<bool()> step_logic
+    StepGenerator& step_generator
 ) {
 
     int window_height, window_width;
     unsigned int counter = 0;
 
-    while (!glfwWindowShouldClose(window) && step_logic()) {
+    while (
+        !glfwWindowShouldClose(window) &&
+        step_generator.step()
+    ) {
 
         if (counter >= step_counter) {
             clear_window(window, &window_width, &window_height);
