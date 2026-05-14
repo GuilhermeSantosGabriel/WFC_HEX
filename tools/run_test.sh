@@ -3,7 +3,7 @@
 cd "$(dirname "$0")/.."
 
 TEST_INPUT=${1:-"base_perlin"}
-RADIUS=${2:-45}
+shift
 
 if [[ $TEST_INPUT == test_* ]]; then
     TEST_EXE="$TEST_INPUT"
@@ -18,15 +18,16 @@ make tests || exit 1
 
 if [ -f "$EXE_PATH" ]; then
     mkdir -p bin/output
-    echo "Executing: $TEST_EXE (Radius: $RADIUS)"
-    
-    "$EXE_PATH" > "$OUTPUT_FILE" <<< "$RADIUS"
+    echo "--- Executing Test: $TEST_EXE ---"
 
-    python3 scripts/visualize_hexmap.py "$OUTPUT_FILE"
-    python3 scripts/visualize_isometric_hexmap.py "$OUTPUT_FILE"
-    
+    "$EXE_PATH" "$@" > "$OUTPUT_FILE"
+
+    if [ ${PIPESTATUS[0]} -eq 0 ]; then
+        echo "--- Generating Visuals ---"
+        python3 scripts/visualize_hexmap.py "$OUTPUT_FILE"
+        python3 scripts/visualize_isometric_hexmap.py "$OUTPUT_FILE"
+    fi
 else
-    echo "Error: The test '$TEST_EXE' doesn't exists in bin/."
-    echo "Verify if it exists in src/tests/."
+    echo "Error: The test '$TEST_EXE' doesn't exist in bin/."
     exit 1
 fi
