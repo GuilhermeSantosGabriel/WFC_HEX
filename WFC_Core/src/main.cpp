@@ -1,5 +1,6 @@
 #include <iostream>
 
+#include "cli/args_parser.h"
 #include "engine/rules.h"
 #include "engine/hex_to_pixels.h"
 #include "models/hexmap.h"
@@ -7,43 +8,50 @@
 #include "engine/noises/noises.h"
 #include "engine/render/render.h"
 
-int main() {
+int main(int argc, char *argv[]) {
 
-    int radius;
-    std::cerr << "Type map radius (size): ";
-    std::cin >> radius;
+    ArgsParser cli_args(argc, argv);
 
     validate_constraints();
 
     Layout layout(layout_flat, Point(5,5), Point(500, 500));
-    HexMap hex_map = HexMap::generate_uncollapsed_hex_map(layout, radius);
+    HexMap hex_map = HexMap::generate_uncollapsed_hex_map(layout, cli_args.map_radius);
 
-    GLFWwindow* window = setup_window();
-    HexRenderer hex_renderer = HexRenderer(4);
-
-    unsigned int seed = 27;
-    PerlinNoise height_factor_perlin(seed);
-    RidgedNoise river_ridged(seed);
+    PerlinNoise height_factor_perlin(cli_args.hf_perlin_seed);
+    RidgedNoise river_ridged(cli_args.river_ridged_seed);
 
     RiverGenerator river_gen(
         hex_map, true,
         height_factor_perlin, river_ridged
     );
-    run_step_visual_simulation(
-        window, hex_renderer, 100, hex_map, river_gen
-    );
-    // river_gen.generate_river();
 
     WFC wfc(
-        hex_map, seed,
+        hex_map, cli_args.wfc_seed,
         height_factor_perlin
     );
-    run_step_visual_simulation(
-        window, hex_renderer, 100, hex_map, wfc
-    );
-    // wfc.wave_function_collapse();
+
+    if (cli_args.opengl_render) {
+
+        GLFWwindow* window = setup_window();
+        HexRenderer hex_renderer = HexRenderer(4);
+
+        run_step_visual_simulation(
+            window, hex_renderer, cli_args.opengl_step_counter, hex_map, river_gen
+        );
+
+        run_step_visual_simulation(
+            window, hex_renderer, cli_args.opengl_step_counter, hex_map, wfc
+        );
+
+        terminate_window(window);
+    }
+
+    else {
+        river_gen.generate_river();
+        wfc.wave_function_collapse();
+    }
 
     hex_map.print_map();
 
-    terminate_window(window);
+    return 0;
 }
