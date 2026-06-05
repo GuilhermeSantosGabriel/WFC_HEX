@@ -1,4 +1,5 @@
 #include "engine/render/render.h"
+#include "engine/rules.h"
 
 #include <iostream>
 
@@ -97,6 +98,23 @@ void HexRenderer::setup_geometry() {
     glEnableVertexAttribArray(0);
 }
 
+glm::vec3 tile_color(int tile) {
+    switch (tile) {
+    case GRASS:
+        return glm::vec3(124.0f/255.0f, 255.0f/255.0f, 124.0f/255.0f);
+    case FOREST:
+        return glm::vec3(32.0f/255.0f, 87.0f/255.0f, 12.0f/255.0f);
+    case WATER:
+        return glm::vec3(0.0f, 0.0f, 1.0f);
+    case SAND:
+        return glm::vec3(1.0f, 1.0f, 0.0f);
+    case EMPTY:
+        return glm::vec3(1.0f, 1.0f, 1.0f);
+    default:
+        throw std::runtime_error("Invalid tile provided to tile_color");
+    }
+}
+
 void HexRenderer::draw_hex_map_frame(HexMap& hex_map, int width, int height) {
 
     glUseProgram(shader_program);
@@ -109,8 +127,13 @@ void HexRenderer::draw_hex_map_frame(HexMap& hex_map, int width, int height) {
 
     for (const auto& cell : hex_map.cells) {
 
-        // TODO - deal with color cell definition
-        glm::vec3 color = cell.collapsed ? glm::vec3(0.2f, 0.8f, 0.2f) : glm::vec3(0.9f, 0.9f, 0.9f);
+        glm::vec3 color = glm::vec3(0.9f, 0.9f, 0.9f);
+        if (cell.collapsed) {
+            // Because cell is collapsed, possible_tiles has only one element,
+            // which is the cell's tile
+            int cell_tile = *cell.possible_tiles.begin();
+            color = tile_color(cell_tile);
+        }
 
         // Sends cell data to shader
         glUniform2f(glGetUniformLocation(shader_program, "offset"), (float)cell.x, (float)cell.y);
