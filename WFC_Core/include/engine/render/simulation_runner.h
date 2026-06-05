@@ -13,7 +13,8 @@ void run_step_visual_simulation(
     HexRenderer& hex_renderer,
     unsigned int step_counter,
     HexMap& hex_map,
-    StepGenerator& step_generator
+    StepGenerator& step_generator,
+    bool persist_after_generator_finished
 );
 
 #endif

@@ -14,8 +14,8 @@ GLFWwindow* setup_window() {
     }
 
     // Sets GLWF up with OpenGL
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     
     #ifdef __APPLE__
@@ -36,6 +36,10 @@ GLFWwindow* setup_window() {
     glViewport(0, 0, 1000, 1000);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
+    // Enable z-buffer to avoid having to sort triangles by distance to the camera
+    // before drawing them
+    glEnable(GL_DEPTH_TEST);
+
     return window;
 }
 
@@ -43,7 +47,7 @@ void clear_window(GLFWwindow* window, int* width, int* height) {
 
     // Clears buffer
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     // Deals with window resizing
     glfwGetFramebufferSize(window, width, height);

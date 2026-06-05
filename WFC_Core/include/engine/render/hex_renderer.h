@@ -3,7 +3,7 @@
 
 #include "models/hexmap.h"
 
-#include <vector>
+#include <array>
 #include <cmath>
 #include <external/glad/glad.h>
 #include <external/glm/glm.hpp>
@@ -19,7 +19,8 @@ public:
 
 private:
 
-    unsigned int VAO, VBO;
+    std::array<float, 12> hex_vertices_offset_from_hex_center;
+    unsigned int VAO, VBO, EBO;
     unsigned int shader_program;
     float radius;
 

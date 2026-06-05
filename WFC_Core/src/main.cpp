@@ -36,11 +36,11 @@ int main(int argc, char *argv[]) {
         HexRenderer hex_renderer = HexRenderer(4);
 
         run_step_visual_simulation(
-            window, hex_renderer, cli_args.opengl_step_counter, hex_map, river_gen
+            window, hex_renderer, cli_args.opengl_step_counter, hex_map, river_gen, false
         );
 
         run_step_visual_simulation(
-            window, hex_renderer, cli_args.opengl_step_counter, hex_map, wfc
+            window, hex_renderer, cli_args.opengl_step_counter, hex_map, wfc, true
         );
 
         terminate_window(window);
