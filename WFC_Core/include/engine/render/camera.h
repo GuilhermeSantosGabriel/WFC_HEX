@@ -17,11 +17,7 @@ public:
     static constexpr float camera_speed_map_units_per_second = 300.0f;
 
     glm::mat4 view_matrix() const;
-    float delta_time();
     void translate(glm::vec2 direction, float delta_time);
-
-private:
-    float last_frame_timestamp;
 };
 
 #endif

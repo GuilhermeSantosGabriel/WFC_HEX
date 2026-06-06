@@ -1,7 +1,7 @@
 #include "engine/render/render.h"
 
-// Processes keyboard input and resets delta_time through camera.pan call
-void input_keyboard_process(GLFWwindow* window, Camera& camera) {
+// Processes all keyboard input
+void input_keyboard_process(GLFWwindow* window, Camera& camera, float delta_time) {
     if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
         glfwSetWindowShouldClose(window, GL_TRUE);
         return;
@@ -20,7 +20,6 @@ void input_keyboard_process(GLFWwindow* window, Camera& camera) {
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
         direction.x += 1.0f;
     }
-    const float delta_time = camera.delta_time();
     camera.translate(direction, delta_time);
 }
 
@@ -37,11 +36,19 @@ void run_step_visual_simulation(
     int window_height, window_width;
     unsigned int counter = 0;
 
+    double last_frame_timestamp = glfwGetTime();
+
     while (
         !glfwWindowShouldClose(window) &&
         step_generator.step()
     ) {
-        input_keyboard_process(window, camera);
+        const double current_frame_timestamp = glfwGetTime();
+        const float delta_time = static_cast<float>(
+            current_frame_timestamp - last_frame_timestamp
+        );
+        last_frame_timestamp = current_frame_timestamp;
+
+        input_keyboard_process(window, camera, delta_time);
         if (counter >= step_counter) {
             clear_window(window, &window_width, &window_height);
             hex_renderer.draw_hex_map_frame(hex_map, window_width, window_height, camera);
@@ -52,10 +59,14 @@ void run_step_visual_simulation(
         else counter++;
     }
     if (persist_after_generator_finished) {
-        // Reset last frame timestamp to avoid camera movement crazy jump
-        (void)camera.delta_time();
         while(!glfwWindowShouldClose(window)) {
-            input_keyboard_process(window, camera);
+            const double current_frame_timestamp = glfwGetTime();
+            const float delta_time = static_cast<float>(
+                current_frame_timestamp - last_frame_timestamp
+            );
+            last_frame_timestamp = current_frame_timestamp;
+
+            input_keyboard_process(window, camera, delta_time);
             clear_window(window, &window_width, &window_height);
             hex_renderer.draw_hex_map_frame(hex_map, window_width, window_height, camera);
             update_window(window);
