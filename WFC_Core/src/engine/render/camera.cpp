@@ -1,12 +1,11 @@
 #include "engine/render/camera.h"
 
 Camera::Camera(glm::vec3 position) : position(position) {
-    axis_vector_up_normalized = glm::normalize(glm::vec3(0.0f, 1.0f, 0.0f));
-    axis_vector_front_normalized = glm::normalize(glm::vec3(0.0f, 0.0f, -1.0f));
+    direction_normalized = axis_vector_front_normalized;
 }
 
 glm::mat4 Camera::view_matrix() const {
-    return glm::lookAt(position, position + axis_vector_front_normalized, axis_vector_up_normalized);
+    return glm::lookAt(position, position + direction_normalized, axis_vector_up_normalized);
 }
 
 void Camera::translate(glm::vec2 direction, float delta_time) {
