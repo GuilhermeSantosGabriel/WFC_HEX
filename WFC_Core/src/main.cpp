@@ -7,6 +7,7 @@
 #include "engine/generators/generators.h"
 #include "engine/noises/noises.h"
 #include "engine/render/render.h"
+#include "engine/render/camera.h"
 
 int main(int argc, char *argv[]) {
 
@@ -14,7 +15,7 @@ int main(int argc, char *argv[]) {
 
     validate_constraints();
 
-    Layout layout(layout_flat, Point(5,5), Point(500, 500));
+    Layout layout(layout_flat, Point(5.0, 5.0), Point(500.0, 500.0));
     HexMap hex_map = HexMap::generate_uncollapsed_hex_map(layout, cli_args.map_radius);
 
     PerlinNoise height_factor_perlin(cli_args.hf_perlin_seed);
@@ -33,14 +34,16 @@ int main(int argc, char *argv[]) {
     if (cli_args.opengl_render) {
 
         GLFWwindow* window = setup_window();
-        HexRenderer hex_renderer = HexRenderer(4);
+        HexRenderer hex_renderer = HexRenderer(4.5f);
+        constexpr glm::vec3 camera_position_initial = glm::vec3(0.0f, 0.0f, 0.0f);
+        Camera camera = Camera(camera_position_initial);
 
         run_step_visual_simulation(
-            window, hex_renderer, cli_args.opengl_step_counter, hex_map, river_gen, false
+            window, hex_renderer, cli_args.opengl_step_counter, hex_map, river_gen, camera, false
         );
 
         run_step_visual_simulation(
-            window, hex_renderer, cli_args.opengl_step_counter, hex_map, wfc, true
+            window, hex_renderer, cli_args.opengl_step_counter, hex_map, wfc, camera, true
         );
 
         terminate_window(window);

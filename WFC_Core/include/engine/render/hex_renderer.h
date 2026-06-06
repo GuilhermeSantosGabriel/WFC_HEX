@@ -2,6 +2,7 @@
 #define HEX_RENDERER_H
 
 #include "models/hexmap.h"
+#include "engine/render/camera.h"
 
 #include <array>
 #include <cmath>
@@ -15,7 +16,7 @@ public:
 
     HexRenderer(float hex_radius);
 
-    void draw_hex_map_frame(HexMap& hex_map, int width, int height);
+    void draw_hex_map_frame(const HexMap& hex_map, int width, int height, const Camera& camera);
 
 private:
 

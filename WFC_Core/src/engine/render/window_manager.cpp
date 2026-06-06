@@ -17,6 +17,8 @@ GLFWwindow* setup_window() {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    // MSAA to reduce flickering
+    glfwWindowHint(GLFW_SAMPLES, 4);
     
     #ifdef __APPLE__
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
@@ -28,6 +30,8 @@ GLFWwindow* setup_window() {
     }
 
     glfwMakeContextCurrent(window);
+    // Enables vsync
+    glfwSwapInterval(1);
 
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
         throw std::runtime_error("Error on GLAD Load");
@@ -39,6 +43,8 @@ GLFWwindow* setup_window() {
     // Enable z-buffer to avoid having to sort triangles by distance to the camera
     // before drawing them
     glEnable(GL_DEPTH_TEST);
+    // Enable MSAA to reduce flickering
+    glEnable(GL_MULTISAMPLE);
 
     return window;
 }

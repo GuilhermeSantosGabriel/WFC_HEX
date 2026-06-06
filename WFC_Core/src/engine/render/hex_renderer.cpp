@@ -156,12 +156,19 @@ glm::vec3 tile_color(int tile) {
     }
 }
 
-void HexRenderer::draw_hex_map_frame(HexMap& hex_map, int width, int height) {
+void HexRenderer::draw_hex_map_frame(const HexMap& hex_map, int width, int height, const Camera& camera) {
 
     glUseProgram(shader_program);
 
     // NDC conversion matrix
-    glm::mat4 projection = glm::ortho(0.0f, (float)width, (float)height, 0.0f, -1.0f, 1.0f);
+    glm::mat4 projection = glm::ortho(
+        0.0f,
+        (float)width,
+        (float)height,
+        0.0f,
+        -1.0f,
+        1.0f
+    ) * camera.view_matrix();
     constexpr GLint uProjection_location = 0;
     glUniformMatrix4fv(uProjection_location, 1, GL_FALSE, &projection[0][0]);
 
@@ -170,16 +177,16 @@ void HexRenderer::draw_hex_map_frame(HexMap& hex_map, int width, int height) {
 
     for (const auto& cell : hex_map.cells) {
 
-        glm::vec3 color = glm::vec3(0.9f, 0.9f, 0.9f);
+        glm::vec3 cell_color = glm::vec3(0.9f, 0.9f, 0.9f);
         if (cell.collapsed) {
             // Because cell is collapsed, possible_tiles has only one element,
             // which is the cell's tile
             const int cell_tile = *cell.possible_tiles.begin();
-            color = tile_color(cell_tile);
+            cell_color = tile_color(cell_tile);
         }
 
         constexpr GLint uColor_location = 1;
-        glUniform3f(uColor_location, color.x, color.y, color.z);
+        glUniform3f(uColor_location, cell_color.x, cell_color.y, cell_color.z);
 
         constexpr int FLOATS_PER_VERTEX = 3;
         std::array<float, CORNER_VERTICES_PER_HEX * FLOATS_PER_VERTEX> corner_vertices;
