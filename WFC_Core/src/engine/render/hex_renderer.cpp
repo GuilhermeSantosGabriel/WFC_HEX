@@ -2,22 +2,69 @@
 #include "engine/rules.h"
 
 #include <iostream>
+#include <stdexcept>
 
-const char* vertexShaderSource = R"glsl(
+constexpr const char* vertexShaderSource = R"glsl(
     #version 460 core
-    layout(location = 0) in vec3 aPos;
+    layout(location = 0) in vec3 aPosition;
+    layout(location = 1) in vec3 aNormal;
+
     layout(location = 0) uniform mat4 uProjection;
+
+    out vec3 fragmentPosition;
+    out vec3 fragmentNormal;
+
     void main() {
-        gl_Position = uProjection * vec4(aPos, 1.0);
+        fragmentPosition = aPosition;
+        fragmentNormal = aNormal;
+        gl_Position = uProjection * vec4(aPosition, 1.0);
     }
 )glsl";
 
-const char* fragmentShaderSource = R"glsl(
+constexpr const char* fragmentShaderSource = R"glsl(
     #version 460 core
-    layout(location = 1) uniform vec3 uColor;
-    out vec4 FragColor;
+    layout(location = 1) uniform vec3 uViewPosition;
+    layout(location = 2) uniform vec3 uSunDirection;
+    layout(location = 3) uniform vec3 uColor;
+    layout(location = 4) uniform bool uUseLighting;
+    layout(location = 5) uniform float uLightAmbientIntensity;
+    layout(location = 6) uniform float uLightDiffuseIntensity;
+    layout(location = 7) uniform float uLightSpecularIntensity;
+    layout(location = 8) uniform vec3 uMaterialAmbientColor;
+    layout(location = 9) uniform vec3 uMaterialDiffuseColor;
+    layout(location = 10) uniform vec3 uMaterialSpecularColor;
+    layout(location = 11) uniform float uMaterialShininess;
+
+    in vec3 fragmentPosition;
+    in vec3 fragmentNormal;
+
+    out vec4 outFragmentColor;
+
     void main() {
-        FragColor = vec4(uColor, 1.0);
+        const float MINIMUM_LIGHT_COSINE = 0.0;
+        const float COLOR_ALPHA = 1.0;
+
+        if (!uUseLighting) {
+            outFragmentColor = vec4(uColor, COLOR_ALPHA);
+            return;
+        }
+
+        // Phong lighting used below
+        vec3 normalizedNormal = normalize(fragmentNormal);
+        vec3 lightDirection = normalize(uSunDirection);
+        vec3 viewDirection = normalize(uViewPosition - fragmentPosition);
+        vec3 reflectionDirection = reflect(-lightDirection, normalizedNormal);
+
+        vec3 ambientColor = uLightAmbientIntensity * uMaterialAmbientColor;
+
+        float diffuseCosine = max(dot(normalizedNormal, lightDirection), MINIMUM_LIGHT_COSINE);
+        vec3 diffuseColor = uLightDiffuseIntensity * diffuseCosine * uMaterialDiffuseColor;
+
+        float specularCosine = max(dot(viewDirection, reflectionDirection), MINIMUM_LIGHT_COSINE);
+        float specularStrength = pow(specularCosine, uMaterialShininess);
+        vec3 specularColor = uLightSpecularIntensity * specularStrength * uMaterialSpecularColor;
+
+        outFragmentColor = vec4(ambientColor + diffuseColor + specularColor, COLOR_ALPHA);
     }
 )glsl";
 
@@ -48,9 +95,9 @@ HexRenderer::HexRenderer(float hex_radius) : radius(hex_radius) {
     }
 }
 
-unsigned int HexRenderer::compile_shader(unsigned int type, const char* source) {
+unsigned int HexRenderer::compile_shader(const unsigned int type, const char* source) {
 
-    unsigned int id = glCreateShader(type);
+    const unsigned int id = glCreateShader(type);
     glShaderSource(id, 1, &source, nullptr);
     glCompileShader(id);
 
@@ -69,8 +116,8 @@ unsigned int HexRenderer::compile_shader(unsigned int type, const char* source) 
 void HexRenderer::setup_shaders() {
 
     // Compile Shaders
-    unsigned int vertex = compile_shader(GL_VERTEX_SHADER, vertexShaderSource);
-    unsigned int fragment = compile_shader(GL_FRAGMENT_SHADER, fragmentShaderSource);
+    const unsigned int vertex = compile_shader(GL_VERTEX_SHADER, vertexShaderSource);
+    const unsigned int fragment = compile_shader(GL_FRAGMENT_SHADER, fragmentShaderSource);
 
     // Creates and links Shader Program
     shader_program = glCreateProgram();
@@ -104,12 +151,49 @@ constexpr int RECTANGLES_PER_CELL = 6;
 constexpr int RECTANGLE_VERTEX_INDICES_PER_CELL =  RECTANGLES_PER_CELL * VERTEX_INDICES_PER_RECTANGLE;
 
 constexpr int VERTEX_INDICES_PER_CELL = HEX_VERTEX_INDICES_PER_CELL + RECTANGLE_VERTEX_INDICES_PER_CELL;
+constexpr int LIT_TRIANGLE_VERTEX_INDEX_START = VERTEX_INDICES_PER_HEX;
+constexpr int LIT_VERTEX_INDICES_PER_CELL = VERTEX_INDICES_PER_CELL - LIT_TRIANGLE_VERTEX_INDEX_START;
+constexpr int POSITION_FLOATS_PER_VERTEX = 3;
+constexpr int NORMAL_FLOATS_PER_VERTEX = 3;
+constexpr int FLOATS_PER_VERTEX = POSITION_FLOATS_PER_VERTEX + NORMAL_FLOATS_PER_VERTEX;
 
 constexpr int LINE_VERTEX_INDICES_PER_EDGE = 2;
 constexpr int HEXAGON_EDGE_COUNT = 6;
 constexpr int VERTICAL_EDGES_PER_PRISM = 6;
 constexpr int LINE_VERTEX_INDICES_PER_CELL = (HEXES_PER_CELL * HEXAGON_EDGE_COUNT +
     VERTICAL_EDGES_PER_PRISM) * LINE_VERTEX_INDICES_PER_EDGE;
+
+constexpr std::array<unsigned int,
+    VERTEX_INDICES_PER_CELL> HEXAGONAL_PRISM_TRIANGLE_VERTEX_INDICES = {
+    // lower hex
+    0,  2,  1, // triangle top right
+    0,  3,  2, // 0, 2, 3, 5 rectangle top left half
+    0,  5,  3, // 0, 2, 3, 5 rectangle bottom rigth half
+    3,  5,  4, // triangle bottom left
+    // upper hex
+    6,  7,  8, // triangle top right
+    6,  8,  9, // 0, 2, 3, 5 rectangle top left half
+    6,  9, 11, // 0, 2, 3, 5 rectangle bottom rigth half
+    9, 10, 11, // triangle bottom left
+    // side rectangle 0, 1, 6, 7
+    0,  6,  1, // bottom left half
+    1,  6,  7, // top right half
+    // side rectangle 1, 2, 7, 8
+    1,  7,  2, // bottom left half
+    2,  7,  8, // top right half
+    // side rectangle 2, 3, 8, 9
+    2,  8,  3, // bottom left half
+    3,  8,  9, // top right half
+    // side rectangle 3, 4, 9, 10
+    3,  9,  4, // bottom left half
+    4,  9, 10, // top right half
+    // side rectangle 4, 5, 10, 11
+    4, 10, 5, // bottom left half
+    5, 10, 11, // top right half
+    // side rectangle 0, 5, 6, 11
+    5, 11, 0, // bottom left half
+    0, 11, 6  // top right half
+};
 
 void HexRenderer::setup_geometry() {
 
@@ -143,37 +227,6 @@ void HexRenderer::setup_geometry() {
     //  3         0
     //   \       /
     //    4-----5
-    constexpr std::array<unsigned int,
-        VERTEX_INDICES_PER_CELL> HEXAGONAL_PRISM_TRIANGLE_VERTEX_INDICES = {
-        // lower hex
-        0,  2,  1, // triangle top right
-        0,  3,  2, // 0, 2, 3, 5 rectangle top left half
-        0,  5,  3, // 0, 2, 3, 5 rectangle bottom rigth half
-        3,  5,  4, // triangle bottom left
-        // upper hex
-        6,  7,  8, // triangle top right
-        6,  8,  9, // 0, 2, 3, 5 rectangle top left half
-        6,  9, 11, // 0, 2, 3, 5 rectangle bottom rigth half
-        9, 10, 11, // triangle bottom left
-        // side rectangle 0, 1, 6, 7
-        0,  6,  1, // bottom left half
-        1,  6,  7, // top right half
-        // side rectangle 1, 2, 7, 8
-        1,  7,  2, // bottom left half
-        2,  7,  8, // top right half
-        // side rectangle 2, 3, 8, 9
-        2,  8,  3, // bottom left half
-        3,  8,  9, // top right half
-        // side rectangle 3, 4, 9, 10
-        3,  9,  4, // bottom left half
-        4,  9, 10, // top right half
-        // side rectangle 4, 5, 10, 11
-        4, 10, 5, // bottom left half
-        5, 10, 11, // top right half
-        // side rectangle 0, 5, 6, 11
-        5, 11, 0, // bottom left half
-        0, 11, 6  // top right half
-    };
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO_TRIANGLES);
     glBufferData(
         GL_ELEMENT_ARRAY_BUFFER,
@@ -214,20 +267,33 @@ void HexRenderer::setup_geometry() {
         GL_STATIC_DRAW
     );
 
-    // Tells opengl that each vertex is x, y, z
-    constexpr GLint aPos_element_count = 3;
-    constexpr GLint aPos_size = aPos_element_count * sizeof(float);
+    // Tells opengl that each vertex is position xyz and normal xyz
+    constexpr GLint POSITION_ELEMENT_COUNT = 3;
+    constexpr GLint NORMAL_ELEMENT_COUNT = 3;
+    constexpr GLint FLOATS_PER_VERTEX = POSITION_ELEMENT_COUNT + NORMAL_ELEMENT_COUNT;
+    constexpr GLint VERTEX_SIZE = FLOATS_PER_VERTEX * sizeof(float);
 
-    constexpr GLint aPos_location = 0;
+    constexpr GLint aPosition_location = 0;
     glVertexAttribPointer(
-        aPos_location,
-        aPos_element_count,
+        aPosition_location,
+        POSITION_ELEMENT_COUNT,
         GL_FLOAT,
         GL_FALSE,
-        aPos_size,
+        VERTEX_SIZE,
         (void*)0
     );
-    glEnableVertexAttribArray(aPos_location);
+    glEnableVertexAttribArray(aPosition_location);
+
+    constexpr GLint aNormal_location = 1;
+    glVertexAttribPointer(
+        aNormal_location,
+        NORMAL_ELEMENT_COUNT,
+        GL_FLOAT,
+        GL_FALSE,
+        VERTEX_SIZE,
+        (void*)(POSITION_ELEMENT_COUNT * sizeof(float))
+    );
+    glEnableVertexAttribArray(aNormal_location);
 
     // Unbinding for cleanup
     glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -235,37 +301,121 @@ void HexRenderer::setup_geometry() {
     glBindVertexArray(0);
 }
 
-// Returns provided tile's RGB color
-glm::vec3 tile_color(int tile) {
+struct Material {
+    glm::vec3 color_ambient;
+    glm::vec3 color_diffuse;
+    glm::vec3 color_specular;
+    float shininess;
+};
+
+Material tile_material(int tile) {
     switch (tile) {
-    case GRASS:
-        return glm::vec3(124.0f/255.0f, 255.0f/255.0f, 124.0f/255.0f);
-    case FOREST:
-        return glm::vec3(32.0f/255.0f, 87.0f/255.0f, 12.0f/255.0f);
-    case WATER:
-        return glm::vec3(0.0f, 0.0f, 1.0f);
-    case SAND:
-        return glm::vec3(1.0f, 1.0f, 0.0f);
-    case EMPTY:
-        return glm::vec3(1.0f, 1.0f, 1.0f);
-    default:
-        throw std::runtime_error("Invalid tile provided to tile_color");
+    case GRASS: {
+        constexpr glm::vec3 COLOR_AMBIENT = {124.0f/255.0f, 255.0f/255.0f, 124.0f/255.0f};
+        constexpr glm::vec3 COLOR_DIFFUSE = {124.0f/255.0f, 255.0f/255.0f, 124.0f/255.0f};
+        constexpr glm::vec3 COLOR_SPECULAR = {0.08f, 0.08f, 0.08f};
+        constexpr float SHININESS = 8.0f;
+        return {COLOR_AMBIENT, COLOR_DIFFUSE, COLOR_SPECULAR, SHININESS};
     }
+    case FOREST: {
+        constexpr glm::vec3 COLOR_AMBIENT = {32.0f/255.0f, 87.0f/255.0f, 12.0f/255.0f};
+        constexpr glm::vec3 COLOR_DIFFUSE = {32.0f/255.0f, 87.0f/255.0f, 12.0f/255.0f};
+        constexpr glm::vec3 COLOR_SPECULAR = {0.03f, 0.03f, 0.03f};
+        constexpr float SHININESS = 4.0f;
+        return {COLOR_AMBIENT, COLOR_DIFFUSE, COLOR_SPECULAR, SHININESS};
+    }
+    case WATER: {
+        constexpr glm::vec3 COLOR_AMBIENT = {0.0f, 0.0f, 1.0f};
+        constexpr glm::vec3 COLOR_DIFFUSE = {0.0f, 0.0f, 1.0f};
+        constexpr glm::vec3 COLOR_SPECULAR = {0.75f, 0.75f, 0.75f};
+        constexpr float SHININESS = 64.0f;
+        return {COLOR_AMBIENT, COLOR_DIFFUSE, COLOR_SPECULAR, SHININESS};
+    }
+    case SAND: {
+        constexpr glm::vec3 COLOR_AMBIENT = {1.0f, 1.0f, 0.0f};
+        constexpr glm::vec3 COLOR_DIFFUSE = {1.0f, 1.0f, 0.0f};
+        constexpr glm::vec3 COLOR_SPECULAR = {0.25f, 0.25f, 0.18f};
+        constexpr float SHININESS = 16.0f;
+        return {COLOR_AMBIENT, COLOR_DIFFUSE, COLOR_SPECULAR, SHININESS};
+    }
+    case EMPTY: {
+        constexpr glm::vec3 COLOR_AMBIENT = {0.9f, 0.9f, 0.9f};
+        constexpr glm::vec3 COLOR_DIFFUSE = {0.9f, 0.9f, 0.9f};
+        constexpr glm::vec3 COLOR_SPECULAR = {0.02f, 0.02f, 0.02f};
+        constexpr float SHININESS = 4.0f;
+        return {COLOR_AMBIENT, COLOR_DIFFUSE, COLOR_SPECULAR, SHININESS};
+    }
+    default:
+        throw std::runtime_error("Invalid tile provided to tile_material");
+    }
+}
+
+std::array<float, LIT_VERTEX_INDICES_PER_CELL * FLOATS_PER_VERTEX> build_lit_triangle_vertices(
+    const std::array<glm::vec3, HEXES_PER_CELL * VERTICES_PER_HEX>& corner_positions
+) {
+    std::array<float, LIT_VERTEX_INDICES_PER_CELL * FLOATS_PER_VERTEX> vertices = {};
+
+    for (int i = LIT_TRIANGLE_VERTEX_INDEX_START; i < VERTEX_INDICES_PER_CELL; i += VERTICES_PER_TRIANGLE) {
+        const unsigned int first_index = HEXAGONAL_PRISM_TRIANGLE_VERTEX_INDICES[i];
+        const unsigned int second_index = HEXAGONAL_PRISM_TRIANGLE_VERTEX_INDICES[i + 1];
+        const unsigned int third_index = HEXAGONAL_PRISM_TRIANGLE_VERTEX_INDICES[i + 2];
+
+        const glm::vec3 first_to_second = corner_positions[second_index] -
+            corner_positions[first_index];
+        const glm::vec3 first_to_third = corner_positions[third_index] -
+            corner_positions[first_index];
+        const glm::vec3 face_normal_raw = glm::cross(first_to_second, first_to_third);
+        const glm::vec3 face_normal = glm::length(face_normal_raw) == 0.0f ?
+            glm::vec3(0.0f, 0.0f, 1.0f) :
+            glm::normalize(face_normal_raw);
+
+        for (int triangle_vertex = 0; triangle_vertex < VERTICES_PER_TRIANGLE; ++triangle_vertex) {
+            const unsigned int corner_index =
+                HEXAGONAL_PRISM_TRIANGLE_VERTEX_INDICES[i + triangle_vertex];
+            const int vertex_offset =
+                (i - LIT_TRIANGLE_VERTEX_INDEX_START + triangle_vertex) * FLOATS_PER_VERTEX;
+            vertices[vertex_offset] = corner_positions[corner_index].x;
+            vertices[vertex_offset + 1] = corner_positions[corner_index].y;
+            vertices[vertex_offset + 2] = corner_positions[corner_index].z;
+            vertices[vertex_offset + 3] = face_normal.x;
+            vertices[vertex_offset + 4] = face_normal.y;
+            vertices[vertex_offset + 5] = face_normal.z;
+        }
+    }
+
+    return vertices;
+}
+
+std::array<float, HEXES_PER_CELL * VERTICES_PER_HEX * FLOATS_PER_VERTEX> build_outline_vertices(
+    const std::array<glm::vec3, HEXES_PER_CELL * VERTICES_PER_HEX>& corner_positions
+) {
+    std::array<float, HEXES_PER_CELL * VERTICES_PER_HEX * FLOATS_PER_VERTEX> vertices;
+    for (int i = 0; i < HEXES_PER_CELL * VERTICES_PER_HEX; ++i) {
+        const int vertex_offset = FLOATS_PER_VERTEX * i;
+        vertices[vertex_offset] = corner_positions[i].x;
+        vertices[vertex_offset + 1] = corner_positions[i].y;
+        vertices[vertex_offset + 2] = corner_positions[i].z;
+        vertices[vertex_offset + 3] = 0.0f;
+        vertices[vertex_offset + 4] = 0.0f;
+        vertices[vertex_offset + 5] = 1.0f;
+    }
+
+    return vertices;
 }
 
 void HexRenderer::draw_hex_map_frame(const HexMap& hex_map, int width, int height, const Camera& camera) {
 
     glUseProgram(shader_program);
 
-    constexpr float field_of_view = glm::radians(45.0f);
+    constexpr float FIELD_OF_VIEW = glm::radians(45.0f);
     const float aspect_ratio = static_cast<float>(width) / static_cast<float>(height);
-    constexpr float near_plane = 0.1f;
-    constexpr float far_plane = 100000.0f;
+    constexpr float NEAR_PLANE = 0.1f;
+    constexpr float FAR_PLANE = 100000.0f;
     glm::mat4 perspective_matrix = glm::perspective(
-        field_of_view,
+        FIELD_OF_VIEW,
         aspect_ratio,
-        near_plane,
-        far_plane
+        NEAR_PLANE,
+        FAR_PLANE
     );
     // Flip projection y axis so initial camera orientation matches Python
     // visualization scripts output image
@@ -274,6 +424,22 @@ void HexRenderer::draw_hex_map_frame(const HexMap& hex_map, int width, int heigh
     const glm::mat4 projection = perspective_matrix * camera.view_matrix();
     constexpr GLint uProjection_location = 0;
     glUniformMatrix4fv(uProjection_location, 1, GL_FALSE, &projection[0][0]);
+
+    constexpr GLint uViewPosition_location = 1;
+    glUniform3f(uViewPosition_location, camera.position.x, camera.position.y, camera.position.z);
+
+    const glm::vec3 SUN_DIRECTION = glm::normalize(glm::vec3(-0.35f, -0.45f, 0.82f));
+    constexpr GLint uSunDirection_location = 2;
+    glUniform3f(uSunDirection_location, SUN_DIRECTION.x, SUN_DIRECTION.y, SUN_DIRECTION.z);
+
+    constexpr GLint uLightAmbientIntensity_location = 5;
+    glUniform1f(uLightAmbientIntensity_location, 0.38f);
+
+    constexpr GLint uLightDiffuseIntensity_location = 6;
+    glUniform1f(uLightDiffuseIntensity_location, 0.42f);
+
+    constexpr GLint uLightSpecularIntensity_location = 7;
+    glUniform1f(uLightSpecularIntensity_location, 0.35f);
 
     glBindVertexArray(VAO);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
@@ -286,56 +452,94 @@ void HexRenderer::draw_hex_map_frame(const HexMap& hex_map, int width, int heigh
 
     for (const auto& cell : hex_map.cells) {
 
-        glm::vec3 cell_color = {0.9f, 0.9f, 0.9f};
-        if (cell.collapsed) {
-            // Because cell is collapsed, possible_tiles has only one element,
-            // which is the cell's tile
-            const int cell_tile = *cell.possible_tiles.begin();
-            cell_color = tile_color(cell_tile);
-        }
-        constexpr GLint uColor_location = 1;
-        glUniform3f(uColor_location, cell_color.x, cell_color.y, cell_color.z);
+        // Because collapsed cells have only one possible tile, that tile is
+        // used as the material source
+        const int cell_tile = cell.collapsed ? *cell.possible_tiles.begin() : EMPTY;
+        const Material cell_material = tile_material(cell_tile);
+
+
+        constexpr GLint uMaterialAmbientColor_location = 8;
+        glUniform3f(
+            uMaterialAmbientColor_location,
+            cell_material.color_ambient.x,
+            cell_material.color_ambient.y,
+            cell_material.color_ambient.z
+        );
+
+        constexpr GLint uMaterialDiffuseColor_location = 9;
+        glUniform3f(
+            uMaterialDiffuseColor_location,
+            cell_material.color_diffuse.x,
+            cell_material.color_diffuse.y,
+            cell_material.color_diffuse.z
+        );
+
+        constexpr GLint uMaterialSpecularColor_location = 10;
+        glUniform3f(
+            uMaterialSpecularColor_location,
+            cell_material.color_specular.x,
+            cell_material.color_specular.y,
+            cell_material.color_specular.z
+        );
+
+        constexpr GLint uMaterialShininess_location = 11;
+        glUniform1f(
+            uMaterialShininess_location,
+            cell_material.shininess
+        );
+
+        constexpr GLint uUseLighting_location = 4;
+        // Enable lighting for prism triangles
+        glUniform1i(uUseLighting_location, GL_TRUE);
 
         const float cell_prism_height = cell.get_height() * world_height_scale;
 
-        constexpr int FLOATS_PER_VERTEX = 3;
-        std::array<float, HEXES_PER_CELL * VERTICES_PER_HEX * FLOATS_PER_VERTEX> corner_vertices;
+        std::array<glm::vec3, HEXES_PER_CELL * VERTICES_PER_HEX> corner_positions;
         for (int i = 0; i < VERTICES_PER_HEX; ++i) {
-            // lower hex x
-            corner_vertices[FLOATS_PER_VERTEX * i] = cell.x +
-                hex_vertices_offset_from_hex_center[i].x;
-            // lower hex y
-            corner_vertices[FLOATS_PER_VERTEX * i + 1] = cell.y +
-                hex_vertices_offset_from_hex_center[i].y;
-            // lower hex z
-            corner_vertices[FLOATS_PER_VERTEX * i + 2] = HEXMAP_SURFACE_HEIGHT;
+            corner_positions[i] = {
+                cell.x + hex_vertices_offset_from_hex_center[i].x,
+                cell.y + hex_vertices_offset_from_hex_center[i].y,
+                HEXMAP_SURFACE_HEIGHT
+            };
 
-            // upper hex x
-            corner_vertices[FLOATS_PER_VERTEX * (i + VERTICES_PER_HEX)] = cell.x +
-                hex_vertices_offset_from_hex_center[i + VERTICES_PER_HEX].x;
-            // upper hex y
-            corner_vertices[FLOATS_PER_VERTEX * (i + VERTICES_PER_HEX) + 1] = cell.y +
-                hex_vertices_offset_from_hex_center[i + VERTICES_PER_HEX].y;
-            // upper hex z
-            corner_vertices[FLOATS_PER_VERTEX * (i + VERTICES_PER_HEX) + 2] = cell_prism_height;
+            corner_positions[i + VERTICES_PER_HEX] = {
+                cell.x + hex_vertices_offset_from_hex_center[i + VERTICES_PER_HEX].x,
+                cell.y + hex_vertices_offset_from_hex_center[i + VERTICES_PER_HEX].y,
+                cell_prism_height
+            };
         }
+
+        const std::array<float, LIT_VERTEX_INDICES_PER_CELL * FLOATS_PER_VERTEX> triangle_vertices =
+            build_lit_triangle_vertices(corner_positions);
         glBufferData(
             GL_ARRAY_BUFFER,
-            corner_vertices.size() * sizeof(float),
-            corner_vertices.data(),
+            triangle_vertices.size() * sizeof(float),
+            triangle_vertices.data(),
             GL_STREAM_DRAW
         );
 
-        constexpr void* EBO_OFFSET = 0;
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO_TRIANGLES);
-        // Draw cell prism from triangles in the order of EBO indices using the
-        // corresponding VBO data of each EBO index
-        glDrawElements(GL_TRIANGLES, VERTEX_INDICES_PER_CELL, GL_UNSIGNED_INT, EBO_OFFSET);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+        glDrawArrays(GL_TRIANGLES, 0, LIT_VERTEX_INDICES_PER_CELL);
 
+        constexpr GLint uColor_location = 3;
         constexpr glm::vec3 OUTLINE_COLOR = {0.0f, 0.0f, 0.0f};
         glUniform3f(uColor_location, OUTLINE_COLOR.x, OUTLINE_COLOR.y, OUTLINE_COLOR.z);
+
+        // Disable lighting for prism outlines
+        glUniform1i(uUseLighting_location, GL_FALSE);
+
+        const std::array<float, HEXES_PER_CELL * VERTICES_PER_HEX * FLOATS_PER_VERTEX>
+            outline_vertices = build_outline_vertices(corner_positions);
+        glBufferData(
+            GL_ARRAY_BUFFER,
+            outline_vertices.size() * sizeof(float),
+            outline_vertices.data(),
+            GL_STREAM_DRAW
+        );
+
         glLineWidth(1.0f);
 
+        constexpr void* EBO_OFFSET = 0;
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO_LINES);
         // Without this depth function change, outlines may not be drawn because
         // they have same depth as hex surface
