@@ -33,10 +33,10 @@ void input_keyboard_process(GLFWwindow* window, Camera& camera, float delta_time
         direction.x += 1.0f;
     }
     if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
-        direction.z += 1.0f;
+        direction.z -= 1.0f;
     }
     if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) {
-        direction.z -= 1.0f;
+        direction.z += 1.0f;
     }
     camera.translate(direction, delta_time);
 }
@@ -59,8 +59,9 @@ void mouse_callback(GLFWwindow* window, double mouse_x_current, double mouse_y_c
     const float mouse_x_offset = mouse_x_current - callback_state->mouse_x_last;
     const float yaw_change = mouse_x_offset * MOUSE_SENSITIVITY;
 
-    // mouse_y_offset is inverted to match OpenGL coordinate system
-    const float mouse_y_offset = -(mouse_y_current - callback_state->mouse_y_last);
+    // mouse_y_offset would normally be inverted to match OpenGL coordinate system,
+    // but projection matrix is flipped vertically during hexmap rendering
+    const float mouse_y_offset = mouse_y_current - callback_state->mouse_y_last;
     const float pitch_change = mouse_y_offset * MOUSE_SENSITIVITY;
 
     callback_state->camera.rotate(yaw_change, pitch_change);

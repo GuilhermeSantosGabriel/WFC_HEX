@@ -164,12 +164,15 @@ void HexRenderer::draw_hex_map_frame(const HexMap& hex_map, int width, int heigh
     const float aspect_ratio = static_cast<float>(width) / static_cast<float>(height);
     constexpr float near_plane = 0.1f;
     constexpr float far_plane = 100000.0f;
-    const glm::mat4 perspective_matrix = glm::perspective(
+    glm::mat4 perspective_matrix = glm::perspective(
         field_of_view,
         aspect_ratio,
         near_plane,
         far_plane
     );
+    // Flip projection y axis so initial camera orientation matches Python
+    // visualization scripts output image
+    perspective_matrix[1][1] *= -1.0f;
 
     const glm::mat4 projection = perspective_matrix * camera.view_matrix();
     constexpr GLint uProjection_location = 0;
