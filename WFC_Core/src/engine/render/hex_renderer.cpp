@@ -403,7 +403,13 @@ std::array<float, HEXES_PER_CELL * VERTICES_PER_HEX * FLOATS_PER_VERTEX> build_o
     return vertices;
 }
 
-void HexRenderer::draw_hex_map_frame(const HexMap& hex_map, int width, int height, const Camera& camera) {
+void HexRenderer::draw_hex_map_frame(
+    const HexMap& hex_map,
+    int width,
+    int height,
+    const Camera& camera,
+    float elapsed_time_seconds
+) {
 
     glUseProgram(shader_program);
 
@@ -428,9 +434,25 @@ void HexRenderer::draw_hex_map_frame(const HexMap& hex_map, int width, int heigh
     constexpr GLint uViewPosition_location = 1;
     glUniform3f(uViewPosition_location, camera.position.x, camera.position.y, camera.position.z);
 
-    const glm::vec3 SUN_DIRECTION = glm::normalize(glm::vec3(-0.35f, -0.45f, 0.82f));
+    constexpr float SUN_ROTATION_SPEED_DEGREES_PER_SECOND = 36.0f;
+    const float sun_angle_radians =
+        glm::radians(SUN_ROTATION_SPEED_DEGREES_PER_SECOND) * elapsed_time_seconds;
+    // Sun begins pointing up from the perspective of camera initial direction
+    constexpr glm::vec3 initial_sun_direction = glm::vec3(0.0f, -1.0f, 0.0f);
+    const glm::mat4 sun_rotation_matrix = glm::rotate(
+        // Start with identity matrix
+        glm::mat4(1.0f),
+        sun_angle_radians,
+        // Rotate around inverse initial camera right axis (sun rises from horizon down
+        // from camera initial position, and sets at opposite horizon)
+        glm::vec3(-1.0f, 0.0f, 0.0f)
+    );
+
+    const glm::vec3 sun_direction = glm::normalize(
+        glm::vec3(sun_rotation_matrix * glm::vec4(initial_sun_direction, 0.0f))
+    );
     constexpr GLint uSunDirection_location = 2;
-    glUniform3f(uSunDirection_location, SUN_DIRECTION.x, SUN_DIRECTION.y, SUN_DIRECTION.z);
+    glUniform3f(uSunDirection_location, sun_direction.x, sun_direction.y, sun_direction.z);
 
     constexpr GLint uLightAmbientIntensity_location = 5;
     glUniform1f(uLightAmbientIntensity_location, 0.38f);

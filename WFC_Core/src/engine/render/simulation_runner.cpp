@@ -82,6 +82,7 @@ void run_step_visual_simulation(
     int window_height, window_width;
     unsigned int counter = 0;
     double last_frame_timestamp = glfwGetTime();
+    const double simulation_start_timestamp = last_frame_timestamp;
 
     MouseCallbackState mouse_callback_state = {camera, 0.0, 0.0, true};
     glfwSetWindowUserPointer(window, &mouse_callback_state);
@@ -100,8 +101,17 @@ void run_step_visual_simulation(
 
         input_keyboard_process(window, camera, delta_time);
         if (counter >= step_counter) {
+            const auto elapsed_time_seconds = static_cast<float>(
+                current_frame_timestamp - simulation_start_timestamp
+            );
             clear_window(window, &window_width, &window_height);
-            hex_renderer.draw_hex_map_frame(hex_map, window_width, window_height, camera);
+            hex_renderer.draw_hex_map_frame(
+                hex_map,
+                window_width,
+                window_height,
+                camera,
+                elapsed_time_seconds
+            );
             update_window(window);
             counter = 0;
         }
@@ -121,8 +131,17 @@ void run_step_visual_simulation(
             last_frame_timestamp = current_frame_timestamp;
 
             input_keyboard_process(window, camera, delta_time);
+            const auto elapsed_time_seconds = static_cast<float>(
+                current_frame_timestamp - simulation_start_timestamp
+            );
             clear_window(window, &window_width, &window_height);
-            hex_renderer.draw_hex_map_frame(hex_map, window_width, window_height, camera);
+            hex_renderer.draw_hex_map_frame(
+                hex_map,
+                window_width,
+                window_height,
+                camera,
+                elapsed_time_seconds
+            );
             update_window(window);
         }
     }

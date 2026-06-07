@@ -21,7 +21,13 @@ public:
     static constexpr int HEXES_PER_CELL = 2;
     float radius;
 
-    void draw_hex_map_frame(const HexMap& hex_map, int width, int height, const Camera& camera);
+    void draw_hex_map_frame(
+        const HexMap& hex_map,
+        int width,
+        int height,
+        const Camera& camera,
+        float elapsed_time_seconds
+    );
 
 private:
 
