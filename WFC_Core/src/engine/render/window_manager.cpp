@@ -19,7 +19,7 @@ GLFWwindow* setup_window() {
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     // MSAA to reduce flickering
     glfwWindowHint(GLFW_SAMPLES, 4);
-    
+
     #ifdef __APPLE__
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
     #endif
@@ -39,6 +39,9 @@ GLFWwindow* setup_window() {
 
     glViewport(0, 0, 1000, 1000);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+
+    // Capture and hide mouse cursor
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
     // Enable z-buffer to avoid having to sort triangles by distance to the camera
     // before drawing them

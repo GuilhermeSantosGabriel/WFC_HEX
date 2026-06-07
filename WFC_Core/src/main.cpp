@@ -35,8 +35,8 @@ int main(int argc, char *argv[]) {
 
         GLFWwindow* window = setup_window();
         HexRenderer hex_renderer = HexRenderer(4.5f);
-        constexpr glm::vec3 camera_position_initial = glm::vec3(0.0f, 0.0f, 0.0f);
-        Camera camera = Camera(camera_position_initial);
+        constexpr glm::vec3 CAMERA_POSITION_INITIAL = {500.0f, 500.0f, 1000.0f};
+        Camera camera = Camera(CAMERA_POSITION_INITIAL);
 
         run_step_visual_simulation(
             window, hex_renderer, cli_args.opengl_step_counter, hex_map, river_gen, camera, false

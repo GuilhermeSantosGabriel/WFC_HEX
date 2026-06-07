@@ -160,15 +160,18 @@ void HexRenderer::draw_hex_map_frame(const HexMap& hex_map, int width, int heigh
 
     glUseProgram(shader_program);
 
-    // NDC conversion matrix
-    glm::mat4 projection = glm::ortho(
-        0.0f,
-        (float)width,
-        (float)height,
-        0.0f,
-        -1.0f,
-        1.0f
-    ) * camera.view_matrix();
+    constexpr float field_of_view = glm::radians(45.0f);
+    const float aspect_ratio = static_cast<float>(width) / static_cast<float>(height);
+    constexpr float near_plane = 0.1f;
+    constexpr float far_plane = 100000.0f;
+    const glm::mat4 perspective_matrix = glm::perspective(
+        field_of_view,
+        aspect_ratio,
+        near_plane,
+        far_plane
+    );
+
+    const glm::mat4 projection = perspective_matrix * camera.view_matrix();
     constexpr GLint uProjection_location = 0;
     glUniformMatrix4fv(uProjection_location, 1, GL_FALSE, &projection[0][0]);
 
@@ -177,7 +180,7 @@ void HexRenderer::draw_hex_map_frame(const HexMap& hex_map, int width, int heigh
 
     for (const auto& cell : hex_map.cells) {
 
-        glm::vec3 cell_color = glm::vec3(0.9f, 0.9f, 0.9f);
+        glm::vec3 cell_color = {0.9f, 0.9f, 0.9f};
         if (cell.collapsed) {
             // Because cell is collapsed, possible_tiles has only one element,
             // which is the cell's tile
