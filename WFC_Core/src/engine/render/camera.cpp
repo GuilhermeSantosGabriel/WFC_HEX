@@ -17,7 +17,7 @@ glm::mat4 Camera::view_matrix() const {
     return glm::lookAt(position, position + direction_normalized(), AXIS_VECTOR_UP_NORMALIZED);
 }
 
-void Camera::translate(glm::vec2 direction, float delta_time) {
+void Camera::translate(glm::vec3 direction, float delta_time) {
     if (glm::length(direction) == 0.0f) {
         return;
     }
@@ -28,8 +28,11 @@ void Camera::translate(glm::vec2 direction, float delta_time) {
         glm::cross(axis_vector_front_normalized, AXIS_VECTOR_UP_NORMALIZED)
     );
 
-    position += delta_time * CAMERA_SPEED_MAP_UNITS_PER_SECOND * direction.x * axis_vector_right_normalized;
-    position += delta_time * CAMERA_SPEED_MAP_UNITS_PER_SECOND * direction.y * axis_vector_front_normalized;
+    const float movement_distance_map_units = CAMERA_SPEED_MAP_UNITS_PER_SECOND * delta_time;
+
+    position += movement_distance_map_units * direction.x * axis_vector_right_normalized;
+    position += movement_distance_map_units * direction.y * axis_vector_front_normalized;
+    position += movement_distance_map_units * direction.z * AXIS_VECTOR_UP_NORMALIZED;
 }
 
 void Camera::rotate(float yaw_change, float pitch_change) {
