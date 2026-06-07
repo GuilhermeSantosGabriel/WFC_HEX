@@ -23,16 +23,19 @@ void Camera::translate(glm::vec3 direction, float delta_time) {
     }
 
     direction = glm::normalize(direction);
-    const glm::vec3 axis_vector_front_normalized = direction_normalized();
-    const glm::vec3 axis_vector_right_normalized = glm::normalize(
-        glm::cross(axis_vector_front_normalized, AXIS_VECTOR_UP_NORMALIZED)
+    const glm::vec3 camera_axis_vector_front_normalized = direction_normalized();
+    const glm::vec3 camera_axis_vector_right_normalized = glm::normalize(
+        glm::cross(camera_axis_vector_front_normalized, AXIS_VECTOR_UP_NORMALIZED)
+    );
+    const glm::vec3 camera_axis_vector_up_normalized = glm::normalize(
+        glm::cross(camera_axis_vector_right_normalized, camera_axis_vector_front_normalized)
     );
 
     const float movement_distance_map_units = CAMERA_SPEED_MAP_UNITS_PER_SECOND * delta_time;
 
-    position += movement_distance_map_units * direction.x * axis_vector_right_normalized;
-    position += movement_distance_map_units * direction.y * axis_vector_front_normalized;
-    position += movement_distance_map_units * direction.z * AXIS_VECTOR_UP_NORMALIZED;
+    position += movement_distance_map_units * direction.x * camera_axis_vector_right_normalized;
+    position += movement_distance_map_units * direction.y * camera_axis_vector_front_normalized;
+    position += movement_distance_map_units * direction.z * camera_axis_vector_up_normalized;
 }
 
 void Camera::rotate(float yaw_change, float pitch_change) {
