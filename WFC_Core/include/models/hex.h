@@ -19,7 +19,7 @@ public:
     int get_q() const;
     int get_r() const;
     int get_s() const;
-    int get_height();
+    int get_height() const;
 
     // Setters
     void set_height(int height_s);

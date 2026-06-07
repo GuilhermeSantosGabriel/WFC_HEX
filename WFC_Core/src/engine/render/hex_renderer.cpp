@@ -21,25 +21,30 @@ const char* fragmentShaderSource = R"glsl(
     }
 )glsl";
 
-constexpr int CORNER_VERTICES_PER_HEX = 6;
+constexpr int VERTICES_PER_HEX = HexRenderer::VERTICES_PER_HEX;
 
 HexRenderer::HexRenderer(float hex_radius) : radius(hex_radius) {
     setup_shaders();
     setup_geometry();
-    // Corner Points' offset - 60 degrees between each and the center
+    // Corner Points' angles - 60 degrees between each and the center
     // Hex corner vertex index visualization:
-    //    2    1
-    //    /----\.
-    // 3 /      \ 0
-    //   \      /
-    //    \----/
-    //    4    5
-    for (int i = 0; i < CORNER_VERTICES_PER_HEX; ++i) {
-        const float angle = i * 60.0f * (M_PI / 180.0f);
-        // x offset
-        hex_vertices_offset_from_hex_center[2 * i] = hex_radius * cos(angle);
-        // y offset
-        hex_vertices_offset_from_hex_center[2 * i + 1] = hex_radius * sin(angle);
+    //    2-----1
+    //   /       \.
+    //  3         0
+    //   \       /.
+    //    4-----5
+    for (int i = 0; i < VERTICES_PER_HEX; ++i) {
+        constexpr float ANGLE_BETWEEN_CONSECUTIVE_HEX_VERTICES_DEGREES = 60.0f;
+        const float angle_radians = glm::radians(
+            ANGLE_BETWEEN_CONSECUTIVE_HEX_VERTICES_DEGREES * i
+        );
+
+        const float x_offset = hex_radius * cos(angle_radians);
+        const float y_offset = hex_radius * sin(angle_radians);
+        const glm::vec2 xy_offset = {x_offset, y_offset};
+
+        hex_vertices_offset_from_hex_center[i] = xy_offset;
+        hex_vertices_offset_from_hex_center[i + VERTICES_PER_HEX] = xy_offset;
     }
 }
 
@@ -90,6 +95,15 @@ void HexRenderer::setup_shaders() {
 constexpr int TRIANGLES_PER_HEX = 4;
 constexpr int VERTICES_PER_TRIANGLE = 3;
 constexpr int VERTEX_INDICES_PER_HEX = TRIANGLES_PER_HEX * VERTICES_PER_TRIANGLE;
+constexpr int HEXES_PER_CELL = HexRenderer::HEXES_PER_CELL;
+constexpr int HEX_VERTEX_INDICES_PER_CELL = HEXES_PER_CELL *  VERTEX_INDICES_PER_HEX;
+
+constexpr int TRIANGLES_PER_RECTANGLE = 2;
+constexpr int VERTEX_INDICES_PER_RECTANGLE = TRIANGLES_PER_RECTANGLE * VERTICES_PER_TRIANGLE;
+constexpr int RECTANGLES_PER_CELL = 6;
+constexpr int RECTANGLE_VERTEX_INDICES_PER_CELL =  RECTANGLES_PER_CELL * VERTEX_INDICES_PER_RECTANGLE;
+
+constexpr int VERTEX_INDICES_PER_CELL = HEX_VERTEX_INDICES_PER_CELL + RECTANGLE_VERTEX_INDICES_PER_CELL;
 
 void HexRenderer::setup_geometry() {
 
@@ -103,17 +117,53 @@ void HexRenderer::setup_geometry() {
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
     // Hex corner vertex index visualization:
-    //    2    1
-    //    /----\.
-    // 3 /      \ 0
-    //   \      /
-    //    \----/
-    //    4    5
-    constexpr std::array<unsigned int, VERTEX_INDICES_PER_HEX> HEX_VERTEX_INDICES = {
-        0, 1, 2, // Triangle top right
-        0, 2, 3, // 0,2,3,5 Rectangle top left half
-        0, 3, 5, // 0,2,3,5 Rectangle bottom rigth half
-        3, 4, 5 // Triangle bottom left
+    //    2-----1
+    //   /       \.
+    //  3         0
+    //   \       /
+    //    4-----5
+    //
+    // Prism visualization (corresponding hex indices are connected when rendering):
+    //    8-----7
+    //   /       \.
+    //  9         6
+    //   \       /
+    //   10-----11
+    //
+    //    2-----1
+    //   /       \.
+    //  3         0
+    //   \       /
+    //    4-----5
+    constexpr std::array<unsigned int, VERTEX_INDICES_PER_CELL> HEX_VERTEX_INDICES = {
+        // Lower hex
+        0,  2,  1, // Triangle top right
+        0,  3,  2, // 0, 2, 3, 5 Rectangle top left half
+        0,  5,  3, // 0, 2, 3, 5 Rectangle bottom rigth half
+        3,  5,  4, // Triangle bottom left
+        // Upper hex
+        6,  7,  8, // Triangle top right
+        6,  8,  9, // 0, 2, 3, 5 Rectangle top left half
+        6,  9, 11, // 0, 2, 3, 5 Rectangle bottom rigth half
+        9, 10, 11, // Triangle bottom left
+        // Side rectangle 0, 1, 6, 7
+        0,  6,  1, // Bottom left half
+        1,  6,  7, // Top right half
+        // Side rectangle 1, 2, 7, 8
+        1,  7,  2, // Bottom left half
+        2,  7,  8, // Top right half
+        // Side rectangle 2, 3, 8, 9
+        2,  8,  3, // Bottom left half
+        3,  8,  9, // Top right half
+        // Side rectangle 3, 4, 9, 10
+        3,  9,  4, // Bottom left half
+        4,  9, 10, // Top right half
+        // Side rectangle 4, 5, 10, 11
+        4, 10, 5, // Bottom left half
+        5, 10, 11, // Top right half
+        // Side rectangle 0, 5, 6, 11
+        5, 11, 0, // Bottom left half
+        0, 11, 6  // Top right half
     };
     glBufferData(
         GL_ELEMENT_ARRAY_BUFFER,
@@ -181,6 +231,9 @@ void HexRenderer::draw_hex_map_frame(const HexMap& hex_map, int width, int heigh
     glBindVertexArray(VAO);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
 
+    constexpr float HEXMAP_SURFACE_HEIGHT = 0.0f;
+    const float world_height_scale = HexRenderer::radius / 4;
+
     for (const auto& cell : hex_map.cells) {
 
         glm::vec3 cell_color = {0.9f, 0.9f, 0.9f};
@@ -190,21 +243,31 @@ void HexRenderer::draw_hex_map_frame(const HexMap& hex_map, int width, int heigh
             const int cell_tile = *cell.possible_tiles.begin();
             cell_color = tile_color(cell_tile);
         }
-
         constexpr GLint uColor_location = 1;
         glUniform3f(uColor_location, cell_color.x, cell_color.y, cell_color.z);
 
+        const float cell_prism_height = cell.get_height() * world_height_scale;
+
         constexpr int FLOATS_PER_VERTEX = 3;
-        std::array<float, CORNER_VERTICES_PER_HEX * FLOATS_PER_VERTEX> corner_vertices;
-        for (int i = 0; i < CORNER_VERTICES_PER_HEX; ++i) {
-            // x
+        std::array<float, HEXES_PER_CELL * VERTICES_PER_HEX * FLOATS_PER_VERTEX> corner_vertices;
+        for (int i = 0; i < VERTICES_PER_HEX; ++i) {
+            // lower hex x
             corner_vertices[FLOATS_PER_VERTEX * i] = cell.x +
-                hex_vertices_offset_from_hex_center[2 * i];
-            // y
+                hex_vertices_offset_from_hex_center[i].x;
+            // lower hex y
             corner_vertices[FLOATS_PER_VERTEX * i + 1] = cell.y +
-                hex_vertices_offset_from_hex_center[2 * i + 1];
-            // z
-            corner_vertices[FLOATS_PER_VERTEX * i + 2] = 0.0f;
+                hex_vertices_offset_from_hex_center[i].y;
+            // lower hex z
+            corner_vertices[FLOATS_PER_VERTEX * i + 2] = HEXMAP_SURFACE_HEIGHT;
+
+            // upper hex x
+            corner_vertices[FLOATS_PER_VERTEX * (i + VERTICES_PER_HEX)] = cell.x +
+                hex_vertices_offset_from_hex_center[i + VERTICES_PER_HEX].x;
+            // upper hex y
+            corner_vertices[FLOATS_PER_VERTEX * (i + VERTICES_PER_HEX) + 1] = cell.y +
+                hex_vertices_offset_from_hex_center[i + VERTICES_PER_HEX].y;
+            // upper hex z
+            corner_vertices[FLOATS_PER_VERTEX * (i + VERTICES_PER_HEX) + 2] = cell_prism_height;
         }
         glBufferData(
             GL_ARRAY_BUFFER,
@@ -214,8 +277,8 @@ void HexRenderer::draw_hex_map_frame(const HexMap& hex_map, int width, int heigh
         );
 
         constexpr void* EBO_OFFSET = 0;
-        // Draw hex from 4 triangles in the order of EBO indices using the
+        // Draw cell prism from 20 triangles in the order of EBO indices using the
         // corresponding VBO data of each EBO index
-        glDrawElements(GL_TRIANGLES, VERTEX_INDICES_PER_HEX, GL_UNSIGNED_INT, EBO_OFFSET);
+        glDrawElements(GL_TRIANGLES, VERTEX_INDICES_PER_CELL, GL_UNSIGNED_INT, EBO_OFFSET);
     }
 }
