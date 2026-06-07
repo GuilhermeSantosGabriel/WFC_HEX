@@ -26,7 +26,7 @@ public:
 private:
 
     std::array<glm::vec2, HEXES_PER_CELL * VERTICES_PER_HEX> hex_vertices_offset_from_hex_center;
-    unsigned int VAO, VBO, EBO;
+    unsigned int VAO, VBO, EBO_TRIANGLES, EBO_LINES;
     unsigned int shader_program;
 
     void setup_geometry();

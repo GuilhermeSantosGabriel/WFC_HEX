@@ -105,17 +105,25 @@ constexpr int RECTANGLE_VERTEX_INDICES_PER_CELL =  RECTANGLES_PER_CELL * VERTEX_
 
 constexpr int VERTEX_INDICES_PER_CELL = HEX_VERTEX_INDICES_PER_CELL + RECTANGLE_VERTEX_INDICES_PER_CELL;
 
+constexpr int LINE_VERTEX_INDICES_PER_EDGE = 2;
+constexpr int HEXAGON_EDGE_COUNT = 6;
+constexpr int VERTICAL_EDGES_PER_PRISM = 6;
+constexpr int LINE_VERTEX_INDICES_PER_CELL = (HEXES_PER_CELL * HEXAGON_EDGE_COUNT +
+    VERTICAL_EDGES_PER_PRISM) * LINE_VERTEX_INDICES_PER_EDGE;
+
 void HexRenderer::setup_geometry() {
 
     glGenVertexArrays(1, &VAO);
+
     glGenBuffers(1, &VBO);
-    glGenBuffers(1, &EBO);
+
+    glGenBuffers(1, &EBO_TRIANGLES);
+    glGenBuffers(1, &EBO_LINES);
 
     glBindVertexArray(VAO);
 
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
 
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
     // Hex corner vertex index visualization:
     //    2-----1
     //   /       \.
@@ -135,40 +143,74 @@ void HexRenderer::setup_geometry() {
     //  3         0
     //   \       /
     //    4-----5
-    constexpr std::array<unsigned int, VERTEX_INDICES_PER_CELL> HEX_VERTEX_INDICES = {
-        // Lower hex
-        0,  2,  1, // Triangle top right
-        0,  3,  2, // 0, 2, 3, 5 Rectangle top left half
-        0,  5,  3, // 0, 2, 3, 5 Rectangle bottom rigth half
-        3,  5,  4, // Triangle bottom left
-        // Upper hex
-        6,  7,  8, // Triangle top right
-        6,  8,  9, // 0, 2, 3, 5 Rectangle top left half
-        6,  9, 11, // 0, 2, 3, 5 Rectangle bottom rigth half
-        9, 10, 11, // Triangle bottom left
-        // Side rectangle 0, 1, 6, 7
-        0,  6,  1, // Bottom left half
-        1,  6,  7, // Top right half
-        // Side rectangle 1, 2, 7, 8
-        1,  7,  2, // Bottom left half
-        2,  7,  8, // Top right half
-        // Side rectangle 2, 3, 8, 9
-        2,  8,  3, // Bottom left half
-        3,  8,  9, // Top right half
-        // Side rectangle 3, 4, 9, 10
-        3,  9,  4, // Bottom left half
-        4,  9, 10, // Top right half
-        // Side rectangle 4, 5, 10, 11
-        4, 10, 5, // Bottom left half
-        5, 10, 11, // Top right half
-        // Side rectangle 0, 5, 6, 11
-        5, 11, 0, // Bottom left half
-        0, 11, 6  // Top right half
+    constexpr std::array<unsigned int,
+        VERTEX_INDICES_PER_CELL> HEXAGONAL_PRISM_TRIANGLE_VERTEX_INDICES = {
+        // lower hex
+        0,  2,  1, // triangle top right
+        0,  3,  2, // 0, 2, 3, 5 rectangle top left half
+        0,  5,  3, // 0, 2, 3, 5 rectangle bottom rigth half
+        3,  5,  4, // triangle bottom left
+        // upper hex
+        6,  7,  8, // triangle top right
+        6,  8,  9, // 0, 2, 3, 5 rectangle top left half
+        6,  9, 11, // 0, 2, 3, 5 rectangle bottom rigth half
+        9, 10, 11, // triangle bottom left
+        // side rectangle 0, 1, 6, 7
+        0,  6,  1, // bottom left half
+        1,  6,  7, // top right half
+        // side rectangle 1, 2, 7, 8
+        1,  7,  2, // bottom left half
+        2,  7,  8, // top right half
+        // side rectangle 2, 3, 8, 9
+        2,  8,  3, // bottom left half
+        3,  8,  9, // top right half
+        // side rectangle 3, 4, 9, 10
+        3,  9,  4, // bottom left half
+        4,  9, 10, // top right half
+        // side rectangle 4, 5, 10, 11
+        4, 10, 5, // bottom left half
+        5, 10, 11, // top right half
+        // side rectangle 0, 5, 6, 11
+        5, 11, 0, // bottom left half
+        0, 11, 6  // top right half
     };
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO_TRIANGLES);
     glBufferData(
         GL_ELEMENT_ARRAY_BUFFER,
-        HEX_VERTEX_INDICES.size() * sizeof(unsigned int),
-        HEX_VERTEX_INDICES.data(),
+        HEXAGONAL_PRISM_TRIANGLE_VERTEX_INDICES.size() * sizeof(unsigned int),
+        HEXAGONAL_PRISM_TRIANGLE_VERTEX_INDICES.data(),
+        GL_STATIC_DRAW
+    );
+
+    constexpr std::array<unsigned int,
+        LINE_VERTEX_INDICES_PER_CELL> HEXAGONAL_PRISM_LINE_VERTEX_INDICES = {
+        // lower hex outline
+        0, 1,
+        1, 2,
+        2, 3,
+        3, 4,
+        4, 5,
+        5, 0,
+        // upper hex outline
+        6, 7,
+        7, 8,
+        8, 9,
+        9, 10,
+        10, 11,
+        11, 6,
+        // vertical edges
+        0, 6,
+        1, 7,
+        2, 8,
+        3, 9,
+        4, 10,
+        5, 11
+    };
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO_LINES);
+    glBufferData(
+        GL_ELEMENT_ARRAY_BUFFER,
+        HEXAGONAL_PRISM_LINE_VERTEX_INDICES.size() * sizeof(unsigned int),
+        HEXAGONAL_PRISM_LINE_VERTEX_INDICES.data(),
         GL_STATIC_DRAW
     );
 
@@ -186,6 +228,11 @@ void HexRenderer::setup_geometry() {
         (void*)0
     );
     glEnableVertexAttribArray(aPos_location);
+
+    // Unbinding for cleanup
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
 }
 
 // Returns provided tile's RGB color
@@ -230,6 +277,9 @@ void HexRenderer::draw_hex_map_frame(const HexMap& hex_map, int width, int heigh
 
     glBindVertexArray(VAO);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
+
+    GLint gl_depth_func_previous;
+    glGetIntegerv(GL_DEPTH_FUNC, &gl_depth_func_previous);
 
     constexpr float HEXMAP_SURFACE_HEIGHT = 0.0f;
     const float world_height_scale = HexRenderer::radius / 4;
@@ -277,8 +327,22 @@ void HexRenderer::draw_hex_map_frame(const HexMap& hex_map, int width, int heigh
         );
 
         constexpr void* EBO_OFFSET = 0;
-        // Draw cell prism from 20 triangles in the order of EBO indices using the
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO_TRIANGLES);
+        // Draw cell prism from triangles in the order of EBO indices using the
         // corresponding VBO data of each EBO index
         glDrawElements(GL_TRIANGLES, VERTEX_INDICES_PER_CELL, GL_UNSIGNED_INT, EBO_OFFSET);
+
+        constexpr glm::vec3 OUTLINE_COLOR = {0.0f, 0.0f, 0.0f};
+        glUniform3f(uColor_location, OUTLINE_COLOR.x, OUTLINE_COLOR.y, OUTLINE_COLOR.z);
+        glLineWidth(1.0f);
+
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO_LINES);
+        // Without this depth function change, outlines may not be drawn because
+        // they have same depth as hex surface
+        glDepthFunc(GL_LEQUAL);
+        // Draw cell prism outlines
+        glDrawElements(GL_LINES, LINE_VERTEX_INDICES_PER_CELL, GL_UNSIGNED_INT, EBO_OFFSET);
+        // Restore previous depth function
+        glDepthFunc(gl_depth_func_previous);
     }
 }
