@@ -1,13 +1,15 @@
 #ifndef PERLIN_H
 #define PERLIN_H
 
+#include "engine/noises/INoise.h"
 #include <vector>
 
-typedef struct {
-    float x, y;
-} Vector2;
+class PerlinNoise : public INoise {
+public:
+    struct Vector2 {
+        float x, y;
+    };
 
-class PerlinNoise {
 private:
     unsigned int seed;
 
@@ -20,9 +22,7 @@ private:
 public:
     PerlinNoise(unsigned int s) : seed(s) {}
 
-    float sample(float x, float y);
-
-    float normalized_perlin(float x, float y);
+    float sample_implementation(float x, float y);
 };
 
 #endif

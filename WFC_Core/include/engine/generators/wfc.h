@@ -5,7 +5,7 @@
 #include "models/hexmap.h"
 #include "models/cell.h"
 #include "engine/rules.h"
-#include "engine/noises/noises.h"
+#include "engine/noises/INoise.h"
 
 #include <random>
 
@@ -14,12 +14,13 @@ private:
 
     HexMap& hex_map;
 
-    PerlinNoise& height_factor_perlin;
+    // Height Factors Noise
+    INoise& hf_noise;
 
     inline static std::mt19937 gen;
 
 public:
-    WFC(HexMap& hex_map_s, unsigned int wfc_seed, PerlinNoise& hf_perlin);
+    WFC(HexMap& hex_map_s, unsigned int wfc_seed, INoise& hf_n);
 
     void wave_function_collapse();
 

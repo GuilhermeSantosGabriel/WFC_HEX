@@ -1,17 +1,15 @@
 #ifndef RIDGED_MULTIFRACTAL_H
 #define RIDGED_MULTIFRACTAL_H
 
-#include "engine/noises/perlin.h"
+#include "engine/noises/INoise.h"
 
-class RidgedNoise {
+class RidgedNoise  : public INoise {
 private:
-    unsigned int seed;
-
-    PerlinNoise perlin_base;
+    INoise& base_noise;
 public:
-    RidgedNoise(unsigned int s) : seed(s), perlin_base(s) {}
+    RidgedNoise(INoise& b_n) : base_noise(b_n) {}
 
-    float sample(float x, float y);
+    float sample_implementation(float x, float y);
 };
 
 #endif

@@ -1,6 +1,5 @@
 #include "engine/generators/wfc.h"
 
-#include "engine/render/render.h"
 #include "engine/height_dealer.h"
 
 #include <stdexcept>
@@ -8,8 +7,8 @@
 
 
 
-WFC::WFC(HexMap& hex_map_s, unsigned int wfc_seed, PerlinNoise& hf_perlin)
-: hex_map(hex_map_s), height_factor_perlin(hf_perlin) {
+WFC::WFC(HexMap& hex_map_s, unsigned int wfc_seed, INoise& hf_n)
+: hex_map(hex_map_s), hf_noise(hf_n) {
     gen.seed(wfc_seed);
 }
 
@@ -25,7 +24,7 @@ bool WFC::step() {
     this->wfc_collapse(*cell);
     this->update_neighbors(*cell);
     set_height_by_height_factors(
-        *cell, this->height_factor_perlin
+        *cell, this->hf_noise
     );
 
     return true;
