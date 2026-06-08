@@ -5,6 +5,8 @@
 #include <iostream>
 #include <stdexcept>
 
+std::array<glm::vec2, HexRenderer::VERTICES_PER_HEX> HexRenderer::hex_vertices_offset_from_hex_center;
+
 constexpr const char* vertexShaderSource = R"glsl(
     #version 460 core
     layout(location = 0) in vec3 aPosition;
@@ -92,7 +94,6 @@ HexRenderer::HexRenderer(float hex_radius) : radius(hex_radius) {
         const glm::vec2 xy_offset = {x_offset, y_offset};
 
         hex_vertices_offset_from_hex_center[i] = xy_offset;
-        hex_vertices_offset_from_hex_center[i + VERTICES_PER_HEX] = xy_offset;
     }
 }
 
@@ -143,7 +144,7 @@ void HexRenderer::setup_shaders() {
 constexpr int TRIANGLES_PER_HEX = 4;
 constexpr int VERTICES_PER_TRIANGLE = 3;
 constexpr int VERTEX_INDICES_PER_HEX = TRIANGLES_PER_HEX * VERTICES_PER_TRIANGLE;
-constexpr int HEXES_PER_CELL = HexRenderer::HEXES_PER_CELL;
+constexpr int HEXES_PER_CELL = 2;
 constexpr int HEX_VERTEX_INDICES_PER_CELL = HEXES_PER_CELL *  VERTEX_INDICES_PER_HEX;
 
 constexpr int TRIANGLES_PER_RECTANGLE = 2;
@@ -173,8 +174,8 @@ constexpr std::array<unsigned int,
     3,  5,  4, // triangle bottom left
     // upper hex
     6,  7,  8, // triangle top right
-    6,  8,  9, // 0, 2, 3, 5 rectangle top left half
-    6,  9, 11, // 0, 2, 3, 5 rectangle bottom rigth half
+    6,  8,  9, // 6, 8, 9, 11 rectangle top left half
+    6,  9, 11, // 6, 8, 9, 11 rectangle bottom rigth half
     9, 10, 11, // triangle bottom left
     // side rectangle 0, 1, 6, 7
     0,  6,  1, // bottom left half
@@ -418,9 +419,9 @@ glm::vec3 hex_map_center(const HexMap& hex_map) {
     return center / static_cast<float>(hex_map.cells.size());
 }
 
-constexpr int SUN_BILLBOARD_VERTEX_COUNT = 6;
+constexpr int SUN_BILLBOARD_VERTEX_COUNT = TRIANGLES_PER_HEX * VERTICES_PER_TRIANGLE;
 
-std::array<float, 6 * FLOATS_PER_VERTEX> build_sun_billboard_vertices(
+std::array<float, SUN_BILLBOARD_VERTEX_COUNT * FLOATS_PER_VERTEX> build_sun_billboard_vertices(
     const HexMap& hex_map,
     float hex_radius,
     glm::vec3 sun_direction_normalized,
@@ -428,18 +429,6 @@ std::array<float, 6 * FLOATS_PER_VERTEX> build_sun_billboard_vertices(
 ) {
     const float map_radius_world_units = static_cast<float>(hex_map.get_radius()) * hex_radius;
     const float sun_distance = std::max(map_radius_world_units * 3.0f, hex_radius * 12.0f);
-    const float sun_size = hex_radius * 4.0f;
-
-
-    const glm::vec3 camera_front = camera.direction_normalized();
-    const glm::vec3 camera_right = glm::normalize(
-        glm::cross(camera_front, Camera::AXIS_VECTOR_UP_NORMALIZED)
-    );
-    const glm::vec3 right = camera_right * sun_size;
-
-    const glm::vec3 camera_up = glm::normalize(glm::cross(camera_right, camera_front));
-    const glm::vec3 up = camera_up * sun_size;
-
     const glm::vec3 sun_position_direction = {
         -sun_direction_normalized.x,
         -sun_direction_normalized.y,
@@ -447,22 +436,42 @@ std::array<float, 6 * FLOATS_PER_VERTEX> build_sun_billboard_vertices(
     };
     const glm::vec3 sun_center = hex_map_center(hex_map) + sun_position_direction * sun_distance;
 
-    const std::array<glm::vec3, SUN_BILLBOARD_VERTEX_COUNT> positions = {
-        sun_center - right - up,
-        sun_center + right - up,
-        sun_center + right + up,
-        sun_center - right - up,
-        sun_center + right + up,
-        sun_center - right + up
+    const glm::vec3 camera_front = camera.direction_normalized();
+    const glm::vec3 camera_right = glm::normalize(
+        glm::cross(camera_front, Camera::AXIS_VECTOR_UP_NORMALIZED)
+    );
+    const glm::vec3 camera_up = glm::normalize(glm::cross(camera_right, camera_front));
+    const auto hex_offset_3d = [camera_right, camera_up](const glm::vec2& offset) {
+        const float sun_size_scale = 8.0f;
+        return (camera_right * offset.x + camera_up * offset.y) * sun_size_scale;
     };
 
-    std::array<float, SUN_BILLBOARD_VERTEX_COUNT * FLOATS_PER_VERTEX> vertices = {};
+    const std::array<glm::vec3, SUN_BILLBOARD_VERTEX_COUNT> positions = {
+         // triangle top right
+        sun_center + hex_offset_3d(HexRenderer::hex_vertices_offset_from_hex_center[0]),
+        sun_center + hex_offset_3d(HexRenderer::hex_vertices_offset_from_hex_center[1]),
+        sun_center + hex_offset_3d(HexRenderer::hex_vertices_offset_from_hex_center[2]),
+        // 0, 2, 3, 5 rectangle top left half
+        sun_center + hex_offset_3d(HexRenderer::hex_vertices_offset_from_hex_center[0]),
+        sun_center + hex_offset_3d(HexRenderer::hex_vertices_offset_from_hex_center[2]),
+        sun_center + hex_offset_3d(HexRenderer::hex_vertices_offset_from_hex_center[3]),
+        // 0, 2, 3, 5 rectangle bottom rigth half
+        sun_center + hex_offset_3d(HexRenderer::hex_vertices_offset_from_hex_center[0]),
+        sun_center + hex_offset_3d(HexRenderer::hex_vertices_offset_from_hex_center[3]),
+        sun_center + hex_offset_3d(HexRenderer::hex_vertices_offset_from_hex_center[5]),
+        // triangle bottom left
+        sun_center + hex_offset_3d(HexRenderer::hex_vertices_offset_from_hex_center[3]),
+        sun_center + hex_offset_3d(HexRenderer::hex_vertices_offset_from_hex_center[4]),
+        sun_center + hex_offset_3d(HexRenderer::hex_vertices_offset_from_hex_center[5]),
+    };
 
+    std::array<float, SUN_BILLBOARD_VERTEX_COUNT * FLOATS_PER_VERTEX> vertices;
     for (int i = 0; i < SUN_BILLBOARD_VERTEX_COUNT; ++i) {
         const int vertex_offset = i * FLOATS_PER_VERTEX;
         vertices[vertex_offset] = positions[i].x;
         vertices[vertex_offset + 1] = positions[i].y;
         vertices[vertex_offset + 2] = positions[i].z;
+        // Vertex normal xyz
         vertices[vertex_offset + 3] = 0.0f;
         vertices[vertex_offset + 4] = 0.0f;
         vertices[vertex_offset + 5] = 1.0f;
@@ -593,8 +602,8 @@ void HexRenderer::draw_hex_map_frame(
             };
 
             corner_positions[i + VERTICES_PER_HEX] = {
-                cell.x + hex_vertices_offset_from_hex_center[i + VERTICES_PER_HEX].x,
-                cell.y + hex_vertices_offset_from_hex_center[i + VERTICES_PER_HEX].y,
+                cell.x + hex_vertices_offset_from_hex_center[i].x,
+                cell.y + hex_vertices_offset_from_hex_center[i].y,
                 cell_prism_height
             };
         }
