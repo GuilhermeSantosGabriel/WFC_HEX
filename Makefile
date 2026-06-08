@@ -73,6 +73,10 @@ run: all
 headless: all
 	@./tools/run.sh $(radius) false $(step) $(args)
 
+# --- Architecture & Dependency Targets ---
+view-deps:
+	@./tools/dependencies/quick-view.sh
+
 # --- Testing Targets ---
 tests: $(TEST_BINARIES)
 	@echo "All tests compiled in $(BIN_DIR)/"
@@ -93,7 +97,7 @@ clean:
 	rm -rf $(BIN_DIR) $(OBJ_DIR)
 	@echo "Cleanup complete."
 
-.PHONY: all clean tests run headless test help
+.PHONY: all clean tests run headless test view-deps help
 
 # --- Help / Documentation ---
 help:
@@ -107,6 +111,9 @@ help:
 	@echo "  run             Build and run with current params (interactive/visual)"
 	@echo "  headless        Build and run without OpenGL (useful for scripts)"
 	@echo "  clean           Remove all binaries and object files"
+	@echo ""
+	@echo "Architecture Targets:"
+	@echo "  view-deps       Generate and open the dynamic UML dependency graph"
 	@echo ""
 	@echo "Testing Targets:"
 	@echo "  tests           Compile all test binaries"
@@ -122,5 +129,5 @@ help:
 	@echo "Examples:"
 	@echo "  make run radius=50 render=true"
 	@echo "  make test name=river radius=20 args='--river-seed 42'"
-	@echo "  make headless radius=100"
+	@echo "  make view-deps"
 	@echo "========================================================================"
