@@ -7,7 +7,7 @@
     ALL OF THESE FUNCTIONS WERE BASED ON https://www.youtube.com/watch?v=kCIaHqb60Cw
 */
 
-Vector2 PerlinNoise::randomGradient(int ix, int iy) {
+PerlinNoise::Vector2 PerlinNoise::randomGradient(int ix, int iy) {
 
     // No precomputed gradients mean this works for any number of grid coordinates
     const unsigned w = 8 * sizeof(unsigned);
@@ -51,7 +51,7 @@ float PerlinNoise::interpolate(float a0, float a1, float w) {
 }
 
 // Sample Perlin noise at coordinates x, y
-float PerlinNoise::sample(float x, float y) {
+float PerlinNoise::sample_implementation(float x, float y) {
 
     // Determine grid cell corner coordinates
     int x0 = (int)std::floor(x); 
@@ -77,8 +77,4 @@ float PerlinNoise::sample(float x, float y) {
     float value = interpolate(ix0, ix1, sy);
 
     return value;
-}
-
-float PerlinNoise::normalized_perlin(float x, float y) {
-    return (sample(x, y) + 1.0f) / 2.0f;
 }

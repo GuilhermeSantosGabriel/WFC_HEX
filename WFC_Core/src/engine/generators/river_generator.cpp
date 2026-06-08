@@ -1,16 +1,15 @@
 #include "engine/generators/river_generator.h"
 
 #include "engine/rules.h"
-#include "engine/noises/noises.h"
 #include "engine/height_dealer.h"
 
 
 RiverGenerator::RiverGenerator(
     HexMap& hex_map_s, bool sand_margin_s,
-    PerlinNoise& hf_perlin, RidgedNoise& r_ridged
+    INoise& hf_n, INoise& r_n
 ):
     hex_map(hex_map_s), sand_margin(sand_margin_s),
-    height_factors_perlin(hf_perlin), river_ridged(r_ridged)
+    hf_noise(hf_n), r_noise(r_n)
 {}
 
 void RiverGenerator::generate_river() {
@@ -31,7 +30,7 @@ bool RiverGenerator::step() {
 
     float water_height = 15;
 
-    float ridged_value = 1 - river_ridged.sample(
+    float ridged_value = 1 - r_noise.sample(
         c.get_q()*frequency, c.get_r()*frequency
     );
 
@@ -51,7 +50,7 @@ bool RiverGenerator::step() {
         return true;
     }
 
-    set_height_by_height_factors(c, height_factors_perlin);
+    set_height_by_height_factors(c, hf_noise);
 
     this->current_index++;
     return true;

@@ -2,8 +2,8 @@
 #define HEIGHT_DEALER_H
 
 #include "models/cell.h"
-#include "engine/noises/noises.h"
+#include "engine/noises/INoise.h"
 
-void set_height_by_height_factors(Cell& cell, PerlinNoise& perlin);
+void set_height_by_height_factors(Cell& cell, INoise& hf_noise);
 
 #endif

@@ -29,7 +29,9 @@ int main(int argc, char *argv[]) {
 
     // Creates Noise Objects
     PerlinNoise height_factor_perlin(cli_args.hf_perlin_seed);
-    RidgedNoise river_ridged(cli_args.river_ridged_seed);
+
+    PerlinNoise r_ridged_base(cli_args.river_ridged_seed);
+    RidgedNoise river_ridged(r_ridged_base);
 
     // Creates Generators Objects
     RiverGenerator river_gen(
