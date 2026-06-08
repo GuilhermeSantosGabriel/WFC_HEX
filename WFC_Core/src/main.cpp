@@ -37,13 +37,16 @@ int main(int argc, char *argv[]) {
         HexRenderer hex_renderer = HexRenderer(5.0f);
         constexpr glm::vec3 CAMERA_POSITION_INITIAL = {500.0f, 500.0f, 1000.0f};
         Camera camera = Camera(CAMERA_POSITION_INITIAL);
+        const double visual_start_timestamp = glfwGetTime();
 
         run_step_visual_simulation(
-            window, hex_renderer, cli_args.opengl_step_counter, hex_map, river_gen, camera, false
+            window, hex_renderer, cli_args.opengl_step_counter, hex_map, river_gen,
+            visual_start_timestamp, camera, false
         );
 
         run_step_visual_simulation(
-            window, hex_renderer, cli_args.opengl_step_counter, hex_map, wfc, camera, true
+            window, hex_renderer, cli_args.opengl_step_counter, hex_map, wfc,
+            visual_start_timestamp, camera, true
         );
 
         terminate_window(window);

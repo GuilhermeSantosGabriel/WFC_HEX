@@ -1,6 +1,7 @@
 #include "engine/render/render.h"
 #include "engine/rules.h"
 
+#include <algorithm>
 #include <iostream>
 #include <stdexcept>
 
@@ -403,6 +404,73 @@ std::array<float, HEXES_PER_CELL * VERTICES_PER_HEX * FLOATS_PER_VERTEX> build_o
     return vertices;
 }
 
+glm::vec3 hex_map_center(const HexMap& hex_map) {
+    if (hex_map.cells.empty()) {
+        return {0.0f, 0.0f, 0.0f};
+    }
+
+    glm::vec3 center = {0.0f, 0.0f, 0.0f};
+    for (const auto& cell : hex_map.cells) {
+        center.x += static_cast<float>(cell.x);
+        center.y += static_cast<float>(cell.y);
+    }
+
+    return center / static_cast<float>(hex_map.cells.size());
+}
+
+constexpr int SUN_BILLBOARD_VERTEX_COUNT = 6;
+
+std::array<float, 6 * FLOATS_PER_VERTEX> build_sun_billboard_vertices(
+    const HexMap& hex_map,
+    float hex_radius,
+    glm::vec3 sun_direction_normalized,
+    const Camera& camera
+) {
+    const float map_radius_world_units = static_cast<float>(hex_map.get_radius()) * hex_radius;
+    const float sun_distance = std::max(map_radius_world_units * 3.0f, hex_radius * 12.0f);
+    const float sun_size = hex_radius * 4.0f;
+
+
+    const glm::vec3 camera_front = camera.direction_normalized();
+    const glm::vec3 camera_right = glm::normalize(
+        glm::cross(camera_front, Camera::AXIS_VECTOR_UP_NORMALIZED)
+    );
+    const glm::vec3 right = camera_right * sun_size;
+
+    const glm::vec3 camera_up = glm::normalize(glm::cross(camera_right, camera_front));
+    const glm::vec3 up = camera_up * sun_size;
+
+    const glm::vec3 sun_position_direction = {
+        -sun_direction_normalized.x,
+        -sun_direction_normalized.y,
+        sun_direction_normalized.z
+    };
+    const glm::vec3 sun_center = hex_map_center(hex_map) + sun_position_direction * sun_distance;
+
+    const std::array<glm::vec3, SUN_BILLBOARD_VERTEX_COUNT> positions = {
+        sun_center - right - up,
+        sun_center + right - up,
+        sun_center + right + up,
+        sun_center - right - up,
+        sun_center + right + up,
+        sun_center - right + up
+    };
+
+    std::array<float, SUN_BILLBOARD_VERTEX_COUNT * FLOATS_PER_VERTEX> vertices = {};
+
+    for (int i = 0; i < SUN_BILLBOARD_VERTEX_COUNT; ++i) {
+        const int vertex_offset = i * FLOATS_PER_VERTEX;
+        vertices[vertex_offset] = positions[i].x;
+        vertices[vertex_offset + 1] = positions[i].y;
+        vertices[vertex_offset + 2] = positions[i].z;
+        vertices[vertex_offset + 3] = 0.0f;
+        vertices[vertex_offset + 4] = 0.0f;
+        vertices[vertex_offset + 5] = 1.0f;
+    }
+
+    return vertices;
+}
+
 void HexRenderer::draw_hex_map_frame(
     const HexMap& hex_map,
     int width,
@@ -571,4 +639,24 @@ void HexRenderer::draw_hex_map_frame(
         // Restore previous depth function
         glDepthFunc(gl_depth_func_previous);
     }
+
+    constexpr GLint uUseLighting_location = 4;
+    glUniform1i(uUseLighting_location, GL_FALSE);
+
+    constexpr GLint uColor_location = 3;
+    constexpr glm::vec3 SUN_COLOR = {1.0f, 0.86f, 0.22f};
+    glUniform3f(uColor_location, SUN_COLOR.x, SUN_COLOR.y, SUN_COLOR.z);
+
+    const std::array<float, SUN_BILLBOARD_VERTEX_COUNT * FLOATS_PER_VERTEX> sun_billboard_vertices =
+        build_sun_billboard_vertices(hex_map, HexRenderer::radius, sun_direction, camera);
+    glBufferData(
+        GL_ARRAY_BUFFER,
+        sun_billboard_vertices.size() * sizeof(float),
+        sun_billboard_vertices.data(),
+        GL_STREAM_DRAW
+    );
+
+    // Sun billboard vertices are drawn without EBO
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    glDrawArrays(GL_TRIANGLES, 0, SUN_BILLBOARD_VERTEX_COUNT);
 }

@@ -15,6 +15,7 @@ void run_step_visual_simulation(
     unsigned int step_counter,
     HexMap& hex_map,
     StepGenerator& step_generator,
+    double visual_start_timestamp,
     Camera& camera,
     bool persist_after_generator_finished
 );
