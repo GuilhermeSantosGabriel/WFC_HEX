@@ -1,11 +1,11 @@
-#include "engine/render/render.h"
+#include "engine/render/simulation_runner.h"
 
 void run_step_visual_simulation(
     GLFWwindow* window,
     HexRenderer& hex_renderer,
     unsigned int step_counter,
     HexMap& hex_map,
-    StepGenerator& step_generator
+    IStepGenerator& step_generator
 ) {
 
     int window_height, window_width;
