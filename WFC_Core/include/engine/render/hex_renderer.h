@@ -30,7 +30,7 @@ public:
 
 private:
 
-    unsigned int VAO, VBO, EBO_TRIANGLES, EBO_LINES;
+    unsigned int VAO, VBO, EBO_LINES;
     unsigned int shader_program;
 
     void setup_geometry();

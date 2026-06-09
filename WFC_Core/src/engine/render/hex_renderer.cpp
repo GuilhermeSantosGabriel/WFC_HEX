@@ -39,6 +39,9 @@ constexpr const char* fragmentShaderSource = R"glsl(
     layout(location = 11) uniform float uMaterialShininess;
 
     in vec3 fragmentPosition;
+    // Fragment's face's normal vector. Vector is the same for all fragments in
+    // the same face by having all vertices of each face have the exact same normal vector,
+    // so prism faces look flat rather than smooth
     in vec3 fragmentNormal;
 
     out vec4 outFragmentColor;
@@ -110,6 +113,7 @@ unsigned int HexRenderer::compile_shader(const unsigned int type, const char* so
     if (!success) {
         glGetShaderInfoLog(id, 512, nullptr, infoLog);
         std::cerr << "ERRO::SHADER::COMPILATION_FAILED\n" << infoLog << std::endl;
+        throw std::runtime_error("Error during shader compilation");
     }
 
     return id;
@@ -134,6 +138,7 @@ void HexRenderer::setup_shaders() {
     if (!success) {
         glGetProgramInfoLog(shader_program, 512, nullptr, infoLog);
         std::cerr << "ERRO::PROGRAM::LINKING_FAILED\n" << infoLog << std::endl;
+        throw std::runtime_error("Error during shader compilation");
     }
 
     // Can delete because they are already linked to the program
@@ -166,6 +171,18 @@ constexpr int LINE_VERTEX_INDICES_PER_CELL = (HEXES_PER_CELL * HEXAGON_EDGE_COUN
     VERTICAL_EDGES_PER_PRISM) * LINE_VERTEX_INDICES_PER_EDGE;
 
 constexpr std::array<unsigned int,
+    // Prism vertices visualization (corresponding hex indices are connected when rendering):
+    //    8-----7
+    //   /       \.
+    //  9         6
+    //   \       /
+    //   10-----11
+    //
+    //    2-----1
+    //   /       \.
+    //  3         0
+    //   \       /
+    //    4-----5
     VERTEX_INDICES_PER_CELL> HEXAGONAL_PRISM_TRIANGLE_VERTEX_INDICES = {
     // lower hex
     0,  2,  1, // triangle top right
@@ -178,23 +195,23 @@ constexpr std::array<unsigned int,
     6,  9, 11, // 6, 8, 9, 11 rectangle bottom rigth half
     9, 10, 11, // triangle bottom left
     // side rectangle 0, 1, 6, 7
-    0,  6,  1, // bottom left half
-    1,  6,  7, // top right half
+    0, 1, 6,
+    1, 7, 6,
     // side rectangle 1, 2, 7, 8
-    1,  7,  2, // bottom left half
-    2,  7,  8, // top right half
+    1, 2, 7,
+    2, 8, 7,
     // side rectangle 2, 3, 8, 9
-    2,  8,  3, // bottom left half
-    3,  8,  9, // top right half
+    2, 3, 8,
+    3, 9, 8,
     // side rectangle 3, 4, 9, 10
-    3,  9,  4, // bottom left half
-    4,  9, 10, // top right half
+    3, 4, 9,
+    4, 10, 9,
     // side rectangle 4, 5, 10, 11
-    4, 10, 5, // bottom left half
-    5, 10, 11, // top right half
+    4, 5, 10,
+    5, 11, 10,
     // side rectangle 0, 5, 6, 11
-    5, 11, 0, // bottom left half
-    0, 11, 6  // top right half
+    5, 0, 11,
+    0, 6, 11
 };
 
 void HexRenderer::setup_geometry() {
@@ -203,39 +220,11 @@ void HexRenderer::setup_geometry() {
 
     glGenBuffers(1, &VBO);
 
-    glGenBuffers(1, &EBO_TRIANGLES);
     glGenBuffers(1, &EBO_LINES);
 
     glBindVertexArray(VAO);
 
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
-
-    // Hex corner vertex index visualization:
-    //    2-----1
-    //   /       \.
-    //  3         0
-    //   \       /
-    //    4-----5
-    //
-    // Prism visualization (corresponding hex indices are connected when rendering):
-    //    8-----7
-    //   /       \.
-    //  9         6
-    //   \       /
-    //   10-----11
-    //
-    //    2-----1
-    //   /       \.
-    //  3         0
-    //   \       /
-    //    4-----5
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO_TRIANGLES);
-    glBufferData(
-        GL_ELEMENT_ARRAY_BUFFER,
-        HEXAGONAL_PRISM_TRIANGLE_VERTEX_INDICES.size() * sizeof(unsigned int),
-        HEXAGONAL_PRISM_TRIANGLE_VERTEX_INDICES.data(),
-        GL_STATIC_DRAW
-    );
 
     constexpr std::array<unsigned int,
         LINE_VERTEX_INDICES_PER_CELL> HEXAGONAL_PRISM_LINE_VERTEX_INDICES = {
@@ -328,8 +317,8 @@ Material tile_material(int tile) {
     }
     case WATER: {
         constexpr glm::vec3 COLOR_AMBIENT = {0.0f, 0.0f, 1.0f};
-        constexpr glm::vec3 COLOR_DIFFUSE = {0.0f, 0.0f, 1.0f};
-        constexpr glm::vec3 COLOR_SPECULAR = {0.75f, 0.75f, 0.75f};
+        constexpr glm::vec3 COLOR_DIFFUSE = {0.0f, 0.15f, 0.65f};
+        constexpr glm::vec3 COLOR_SPECULAR = {1.0f, 1.0f, 1.0f};
         constexpr float SHININESS = 64.0f;
         return {COLOR_AMBIENT, COLOR_DIFFUSE, COLOR_SPECULAR, SHININESS};
     }
@@ -379,6 +368,8 @@ std::array<float, LIT_VERTEX_INDICES_PER_CELL * FLOATS_PER_VERTEX> build_lit_tri
             vertices[vertex_offset] = corner_positions[corner_index].x;
             vertices[vertex_offset + 1] = corner_positions[corner_index].y;
             vertices[vertex_offset + 2] = corner_positions[corner_index].z;
+
+            // All vertices have exact same normal vector so prism faces look flat rather than smooth
             vertices[vertex_offset + 3] = face_normal.x;
             vertices[vertex_offset + 4] = face_normal.y;
             vertices[vertex_offset + 5] = face_normal.z;
@@ -397,6 +388,8 @@ std::array<float, HEXES_PER_CELL * VERTICES_PER_HEX * FLOATS_PER_VERTEX> build_o
         vertices[vertex_offset] = corner_positions[i].x;
         vertices[vertex_offset + 1] = corner_positions[i].y;
         vertices[vertex_offset + 2] = corner_positions[i].z;
+
+        // Vertex normal xyz
         vertices[vertex_offset + 3] = 0.0f;
         vertices[vertex_offset + 4] = 0.0f;
         vertices[vertex_offset + 5] = 1.0f;
@@ -429,12 +422,7 @@ std::array<float, SUN_BILLBOARD_VERTEX_COUNT * FLOATS_PER_VERTEX> build_sun_bill
 ) {
     const float map_radius_world_units = static_cast<float>(hex_map.get_radius()) * hex_radius;
     const float sun_distance = std::max(map_radius_world_units * 3.0f, hex_radius * 12.0f);
-    const glm::vec3 sun_position_direction = {
-        -sun_direction_normalized.x,
-        -sun_direction_normalized.y,
-        sun_direction_normalized.z
-    };
-    const glm::vec3 sun_center = hex_map_center(hex_map) + sun_position_direction * sun_distance;
+    const glm::vec3 sun_center = hex_map_center(hex_map) + sun_direction_normalized * sun_distance;
 
     const glm::vec3 camera_front = camera.direction_normalized();
     const glm::vec3 camera_right = glm::normalize(
@@ -446,6 +434,12 @@ std::array<float, SUN_BILLBOARD_VERTEX_COUNT * FLOATS_PER_VERTEX> build_sun_bill
         return (camera_right * offset.x + camera_up * offset.y) * sun_size_scale;
     };
 
+    // Hex corner vertex index visualization:
+    //    2-----1
+    //   /       \.
+    //  3         0
+    //   \       /.
+    //    4-----5
     const std::array<glm::vec3, SUN_BILLBOARD_VERTEX_COUNT> positions = {
          // triangle top right
         sun_center + hex_offset_3d(HexRenderer::hex_vertices_offset_from_hex_center[0]),
@@ -471,6 +465,7 @@ std::array<float, SUN_BILLBOARD_VERTEX_COUNT * FLOATS_PER_VERTEX> build_sun_bill
         vertices[vertex_offset] = positions[i].x;
         vertices[vertex_offset + 1] = positions[i].y;
         vertices[vertex_offset + 2] = positions[i].z;
+
         // Vertex normal xyz
         vertices[vertex_offset + 3] = 0.0f;
         vertices[vertex_offset + 4] = 0.0f;
@@ -487,6 +482,9 @@ void HexRenderer::draw_hex_map_frame(
     const Camera& camera,
     float elapsed_time_seconds
 ) {
+    if (width <= 0 || height <= 0) {
+        return;
+    }
 
     glUseProgram(shader_program);
 
@@ -515,14 +513,14 @@ void HexRenderer::draw_hex_map_frame(
     const float sun_angle_radians =
         glm::radians(SUN_ROTATION_SPEED_DEGREES_PER_SECOND) * elapsed_time_seconds;
     // Sun begins pointing up from the perspective of camera initial direction
-    constexpr glm::vec3 initial_sun_direction = glm::vec3(0.0f, -1.0f, 0.0f);
+    constexpr glm::vec3 initial_sun_direction = glm::vec3(0.0f, 1.0f, 0.0f);
     const glm::mat4 sun_rotation_matrix = glm::rotate(
         // Start with identity matrix
         glm::mat4(1.0f),
         sun_angle_radians,
-        // Rotate around inverse initial camera right axis (sun rises from horizon down
-        // from camera initial position, and sets at opposite horizon)
-        glm::vec3(-1.0f, 0.0f, 0.0f)
+        // Rotate around initial camera right axis (sun rises from horizon on bottom
+        // of camera initial field of view, and sets at opposite horizon)
+        glm::vec3(1.0f, 0.0f, 0.0f)
     );
 
     const glm::vec3 sun_direction = glm::normalize(
@@ -617,6 +615,7 @@ void HexRenderer::draw_hex_map_frame(
             GL_STREAM_DRAW
         );
 
+        // No EBO used for drawing lit triangles
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
         glDrawArrays(GL_TRIANGLES, 0, LIT_VERTEX_INDICES_PER_CELL);
 

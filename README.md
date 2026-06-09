@@ -42,6 +42,17 @@ Required for post-processing and isometric visualization.
 ## 💻 Usage
 
 The project uses a versatile Makefile to manage builds and execution.
+Steps to run:
+1. Run `make run radius=60 render=true` (or use other CLI args, as long as `render=true` is present).
+1. The application will start to run. Use mouse to rotate camera, and following keys to move around:
+    (all movement is relative to camera orientation)
+    - `W`: Move forward
+    - `S`: Move backward
+    - `A`: Move left
+    - `D`: Move right
+    - `Space`: Move up
+    - `LeftShift`: Move down
+1. Press `Esc` or `Q` to quit application.
 
 ### Basic Commands
 - **make**: Compiles the main application.
