@@ -16,8 +16,6 @@ for root, _, files in os.walk(search_dir):
     for file in files:
         if file.endswith('.h'):
             valid_modules.add(file)
-        elif file == "main.cpp":  # Dynamically add main if it exists
-            valid_modules.add(file)
 
 # 2. Scan dependencies
 for root, _, files in os.walk(search_dir):
@@ -26,7 +24,7 @@ for root, _, files in os.walk(search_dir):
     for file in files:
         if file.endswith(('.h', '.cpp')):
             # If it's main, it is the origin. For other .cpp files, map to their respective .h
-            origin_module = file if file == "main.cpp" else file.replace('.cpp', '.h')
+            origin_module = file.replace('.cpp', '.h')
             
             if origin_module not in valid_modules:
                 continue
@@ -52,17 +50,10 @@ with open(output_dot_file, "w") as f_out:
     # Classic UML Styling
     f_out.write("  node [fontname=\"Helvetica\", fontsize=11, shape=rect, style=\"filled\", fillcolor=\"#ffffff\", color=\"#333333\", penwidth=1.5];\n")
     f_out.write("  edge [fontname=\"Helvetica\", fontsize=10, color=\"#444444\", arrowsize=0.8, penwidth=1.0];\n")
-    
-    # Highlight main.cpp discrete styling
-    if "main.cpp" in valid_modules:
-        f_out.write("  \"main.cpp\" [fillcolor=\"#f5f5f5\", style=\"filled,dashed\"];\n")
 
     # Write dependencies with layout edge weight adjustments
     for origin, destination in edges:
-        if origin == "main.cpp":
-            f_out.write(f'  "{origin}" -> "{destination}" [weight=0, style="solid", color="#444444"];\n')
-        else:
-            f_out.write(f'  "{origin}" -> "{destination}";\n')
+        f_out.write(f'  "{origin}" -> "{destination}";\n')
         
     f_out.write("}\n")
 

@@ -19,21 +19,30 @@ endif
 ROOT_DIR := WFC_Core
 SRC_DIR  := $(ROOT_DIR)/src
 INC_DIR  := $(ROOT_DIR)/include
+EXTERNAL_DIR := $(ROOT_DIR)/external
 BIN_DIR  := bin
 OBJ_DIR  := obj
-INCLUDES := -I$(INC_DIR) -I$(INC_DIR)/external
+INCLUDES := -I$(ROOT_DIR) \
+			-I$(INC_DIR) \
+			-I$(EXTERNAL_DIR) \
+			-I$(EXTERNAL_DIR)/imgui \
+			-I$(EXTERNAL_DIR)/glad
 
 # --- Source Files Selection ---
 # Automatically find all .cpp in engine/, models/ and cli/ (or any subfolder except tests)
 CORE_SRCS_CPP := $(shell find $(SRC_DIR) -name "*.cpp" ! -path "$(SRC_DIR)/tests/*" ! -name "main.cpp")
-CORE_SRCS_C   := $(SRC_DIR)/external/glad.c
+EXTERNAL_SRCS_CPP := $(shell find $(EXTERNAL_DIR) -name "*.cpp")
+ALL_SRCS_CPP := $(CORE_SRCS_CPP) $(EXTERNAL_SRCS_CPP)
+
+CORE_SRCS_C   := $(shell find $(EXTERNAL_DIR) -name "*.c")
 
 MAIN_SRC     := $(SRC_DIR)/main.cpp
 TEST_SRCS    := $(shell find $(SRC_DIR)/tests -name "*.cpp")
 
 # --- Object Mapping ---
 CORE_OBJS := $(CORE_SRCS_CPP:$(SRC_DIR)/%.cpp=$(OBJ_DIR)/%.o) \
-             $(CORE_SRCS_C:$(SRC_DIR)/%.c=$(OBJ_DIR)/%.o)
+             $(EXTERNAL_SRCS_CPP:$(EXTERNAL_DIR)/%.cpp=$(OBJ_DIR)/external/%.o) \
+             $(CORE_SRCS_C:$(EXTERNAL_DIR)/%.c=$(OBJ_DIR)/external/%.o)
 
 MAIN_OBJ  := $(OBJ_DIR)/main.o
 TEST_BINARIES := $(TEST_SRCS:$(SRC_DIR)/tests/%.cpp=$(BIN_DIR)/test_%)
@@ -60,7 +69,11 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
 	@mkdir -p $(dir $@)
 	$(CXX) $(CXXFLAGS) $(INCLUDES) -c $< -o $@
 
-$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
+$(OBJ_DIR)/external/%.o: $(EXTERNAL_DIR)/%.cpp
+	@mkdir -p $(dir $@)
+	$(CXX) $(CXXFLAGS) $(INCLUDES) -c $< -o $@
+
+$(OBJ_DIR)/external/%.o: $(EXTERNAL_DIR)/%.c
 	@mkdir -p $(dir $@)
 	$(CC) $(INCLUDES) -c $< -o $@
 
