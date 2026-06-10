@@ -1,4 +1,13 @@
 # Main TO-DOs
 
-- Refactor and atomiza map/hex grid operations and WFC operations
-- Implement new types of tiles
+## Rules
+- TODO - Implement new types of tiles
+- TODO - Setup the relation between tiles and their color
+
+## Seeds
+- TODO - Seed via CLI - For both the noises randomness and the random weight choice of tile type to collapse in wfc, make a easy way to define the wanted seed
+
+# Sketched TO-DOs
+
+## Rules
+- TODO - Color Gradient - Use a nise to implement a slight variation on colors for tiles of each type

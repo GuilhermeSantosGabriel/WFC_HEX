@@ -1,35 +1,30 @@
 #include <iostream>
 
+#include "cli/args_parser.h"
 #include "engine/rules.h"
 #include "engine/hex_to_pixels.h"
 #include "models/hexmap.h"
-#include "engine/river_generator.h"
-#include "engine/wfc.h"
-#include "engine/opengl.h"
-
-#include "engine/noises/perlin.h"
-
-using namespace std;
+#include "engine/noises/noises.h"
 
 
-int main() {
+int main(int argc, char *argv[]) {
 
-    int radius;
-    cerr << "Type map radius (size): ";
-    cin >> radius;
+    ArgsParser cli_args(argc, argv);
 
     Layout layout(layout_flat, Point(5,5), Point(500, 500));
-    HexMap hex_map = HexMap::generate_empty_hex_map(layout, radius);
+    HexMap hex_map = HexMap::generate_empty_hex_map(layout, cli_args.map_radius);
 
     float base = 0.0f;
     float amplitude = 70.0f;
     float frequency = 0.1f;
 
+    PerlinNoise height_factor_perlin(cli_args.hf_perlin_seed);
+
     for (auto &c : hex_map.cells){
 
         c.set_height(
-            (int)(base + amplitude * normalized_perlin(
-                c.get_q(), c.get_r(), frequency
+            (int)(base + amplitude * height_factor_perlin.normalized_perlin(
+                c.get_q() * frequency, c.get_r() * frequency
             ))
         );
     }

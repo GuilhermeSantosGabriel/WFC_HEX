@@ -1,16 +1,28 @@
 #ifndef PERLIN_H
 #define PERLIN_H
 
+#include "engine/noises/INoise.h"
 #include <vector>
 
-struct Vector2 {
-    float x, y;
+class PerlinNoise : public INoise {
+public:
+    struct Vector2 {
+        float x, y;
+    };
+
+private:
+    unsigned int seed;
+
+    Vector2 randomGradient(int ix, int iy);
+
+    float dotGridGradient(int ix, int iy, float x, float y);
+
+    float interpolate(float a0, float a1, float w);
+
+public:
+    PerlinNoise(unsigned int s) : seed(s) {}
+
+    float sample_implementation(float x, float y);
 };
-
-float perlin(float x, float y);
-
-float normalized_perlin(float x, float y, float frequency);
-
-std::vector<std::vector<float>> perlin_noise_pixels(int width, int height);
 
 #endif

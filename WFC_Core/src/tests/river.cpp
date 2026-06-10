@@ -1,76 +1,31 @@
 #include <iostream>
 
+#include "cli/args_parser.h"
 #include "engine/rules.h"
 #include "engine/hex_to_pixels.h"
 #include "models/hexmap.h"
-#include "engine/river_generator.h"
-#include "engine/wfc.h"
-#include "engine/opengl.h"
+#include "engine/generators/generators.h"
 
-#include "engine/noises/ridged_multifractal.h"
 
-using namespace std;
+int main(int argc, char *argv[]) {
 
-int main() {
-
-    int radius;
-    cerr << "Type map radius (size): ";
-    cin >> radius;
+    ArgsParser cli_args(argc, argv);
 
     Layout layout(layout_flat, Point(5,5), Point(500, 500));
-    HexMap hex_map = HexMap::generate_empty_hex_map(layout, radius);
+    HexMap hex_map = HexMap::generate_empty_hex_map(layout, cli_args.map_radius);
 
-    float base = 0.0f;
-    float amplitude = 400.0f;
-    float frequency = 0.01f;
+    PerlinNoise height_factor_perlin(cli_args.hf_perlin_seed);
+    RidgedNoise river_ridged(cli_args.river_ridged_seed);
 
-    float water_height = 15;
+    RiverGenerator river_gen(
+        hex_map, true,
+        height_factor_perlin, river_ridged
+    );
+    river_gen.generate_river();
 
-    float ridged_value;
-    float height;
-
-    vector<reference_wrapper<Cell>> water_cells;
-
-    for (auto &c : hex_map.cells){
-
-        ridged_value = 1 - ridged_multifractal(
-            c.get_q()*frequency, c.get_r()*frequency
-        );
-
-        height = (int)(base + amplitude * ridged_value);
-
-        if (height <= water_height) {
-            height = water_height - 1;
-            c.possible_tiles = {WATER};
-            c.entropy = 1;
-            c.collapsed = true;
-            water_cells.push_back(c);
-        } 
-        else {
-            c.possible_tiles = {GRASS, SAND, FOREST};
-            c.entropy = 3;
-            c.collapsed = false;
-        }
-        // else {
-        //     c.possible_tiles = {-1};
-        //     c.entropy = 1;
-        //     c.collapsed = false;
-        // }
-
-        c.set_height(height);
+    for (auto &cell : hex_map.cells) {
+        if (!cell.collapsed) cell.collapse(EMPTY);
     }
-
-    for (Cell& cell: water_cells) {
-        for (Cell* neighbor : hex_map.get_neighbors(cell)) {
-            if (!neighbor->collapsed) {
-                neighbor->possible_tiles = {SAND};
-                neighbor->entropy = 1;
-                neighbor->collapsed = true;
-            }
-        }
-    }
-
-    wave_function_collapse(hex_map);
 
     hex_map.print_map();
 }

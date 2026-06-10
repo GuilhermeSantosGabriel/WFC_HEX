@@ -12,7 +12,7 @@ Hex::Hex(int q_s, int r_s, int s_s, int height_s) : q(q_s), r(r_s), s(s_s), heig
 int Hex::get_q() const { return q; }
 int Hex::get_r() const { return r; }
 int Hex::get_s() const { return s; }
-int Hex::get_height() { return height; }
+int Hex::get_height() const { return height; }
 
 // Setters
 void Hex::set_height(int height_s) {
