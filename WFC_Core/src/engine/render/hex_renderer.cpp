@@ -8,7 +8,7 @@
 std::array<glm::vec2, HexRenderer::VERTICES_PER_HEX> HexRenderer::hex_vertices_offset_from_hex_center;
 
 constexpr const char* vertexShaderSource = R"glsl(
-    #version 460 core
+    #version 450 core
     layout(location = 0) in vec3 aPosition;
     layout(location = 1) in vec3 aNormal;
 
@@ -25,7 +25,7 @@ constexpr const char* vertexShaderSource = R"glsl(
 )glsl";
 
 constexpr const char* fragmentShaderSource = R"glsl(
-    #version 460 core
+    #version 450 core
     layout(location = 1) uniform vec3 uViewPosition;
     layout(location = 2) uniform vec3 uSunDirection;
     layout(location = 3) uniform vec3 uColor;

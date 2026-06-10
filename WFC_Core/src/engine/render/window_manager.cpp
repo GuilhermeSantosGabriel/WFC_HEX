@@ -1,6 +1,8 @@
 #include "engine/render/render.h"
 
 #include <stdexcept>
+#include <iostream>
+#include <ostream>
 
 // Callback to resize window
 void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
@@ -9,13 +11,17 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
 
 GLFWwindow* setup_window() {
 
+    glfwSetErrorCallback([](int error, const char* description) {
+        std::cerr << "GLFW Error (" << error << "): " << description << std::endl;
+    });
+
     if (!glfwInit()) {
         throw std::runtime_error("Error on GLFW init");
     }
 
     // Sets GLWF up with OpenGL
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     // MSAA to reduce flickering
     glfwWindowHint(GLFW_SAMPLES, 4);
