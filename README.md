@@ -14,8 +14,9 @@ A professional procedural world generator using Wave Function Collapse (WFC) and
 - **Wave Function Collapse (WFC)**: Procedural generation based on tile adjacency constraints and entropy.
 - **Steppable Generation Interface**: Decoupled generation logic allowing real-time visualization of the WFC and River processes.
 - **Noise Algorithms**: Integrated Perlin and Ridged Multifractal noise for heightmaps and biome distribution.
-- **Real-time OpenGL Rendering**: Watch the world collapse and rivers flow step-by-step.
-- **Robust CLI**: Complete control over seeds, map size, and rendering parameters via command line.
+- **Real-time OpenGL Rendering**: Powered by **OpenGL 3.3 Core Profile**.
+- **Interactive Configuration Menu**: Integrated **Dear ImGui** dashboard to customize generation parameters, seeds, and rendering speeds before collapsing the world.
+- **Robust CLI**: Complete control over seeds, map size, and rendering parameters via command line with automatic argument parsing.
 - **Automated Visualization**: Python pipeline for high-quality 2D and 2.5D (Isometric) map rendering.
 
 ## 🛠️ Setup
@@ -42,6 +43,16 @@ Required for post-processing and isometric visualization.
 ## 💻 Usage
 
 The project uses a versatile Makefile to manage builds and execution.
+
+### Launching the Graphical Configuration Menu
+You can now open a fully interactive GUI menu to configure seeds, radius, and speeds before triggering the generation pipeline:
+
+```bash
+make run menu=--open-menu
+```
+
+### Direct CLI Generation
+
 Steps to run:
 1. Run `make run radius=60 render=true` (or use other CLI args, as long as `render=true` is present).
 1. The application will start to run. Use mouse to rotate camera, and following keys to move around:
@@ -58,6 +69,7 @@ Steps to run:
 - **make**: Compiles the main application.
 - **make run**: Compiles and runs the simulation with default parameters.
 - **make headless**: Runs the generation without the OpenGL window (ideal for batch processing).
+- **make test**: (!Deprecated!) Testing suite is currently suspended due to core architecture refactoring.
 - **make help**: Displays a detailed list of all available commands and variables.
 
 ### CLI Configuration
@@ -68,6 +80,7 @@ You can pass parameters directly through the `make` command:
 ```
 
 ### Available Flags (via `args` or direct CLI)
+- `--open-menu`: Opens the Dear ImGui parameters dashboard prior to generation.
 - `--map-radius`: Size of the hexagonal grid.
 - `--opengl-render`: Enables the visual simulation window.
 - `--opengl-step-counter`: Speed of the visual update (frames per N steps).
@@ -75,23 +88,14 @@ You can pass parameters directly through the `make` command:
 - `--hf-perlin-seed`: Seed for the heightmap generation.
 - `--river-ridged-seed`: Seed for the river generation.
 
-## 🧪 Testing & Noise Validation
-
-The testing pipeline allows isolated validation of algorithms and geometry.
-
-- **Run all tests**: `make test`
-- **Run a specific test**: `make test name=perlin radius=60`
-
-The raw data is saved in `bin/output/` and visualized images in `img/test/`.
-
 ## 📂 Project Structure
 
 - `WFC_Core/`:
-    - `engine/`: 
+    - `engine/`: Core generation logic
         - `generators/`: WFC and River logic (including `StepGenerator` interface).
         - `noises/`: Noise algorithm implementations.
         - `render/`: OpenGL window and simulation management.
-    - `cli/`: Command-line argument parsing logic.
+    - `menu/`: Generation menu and Command-line argument parsing logic.
     - `models/`: Hexagonal grid, Cell, and Map data structures.
 - `scripts/`: Python models and visualization scripts (OpenCV/NumPy).
 - `tools/`: Bash automation for the build and run pipeline.
