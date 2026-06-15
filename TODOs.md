@@ -5,7 +5,6 @@
 - TODO - Setup the relation between tiles and their color
 
 ## Seeds
-- TODO - Seed via CLI - For both the noises randomness and the random weight choice of tile type to collapse in wfc, make a easy way to define the wanted seed
 
 # Sketched TO-DOs
 
