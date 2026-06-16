@@ -1,7 +1,7 @@
 #ifndef WFC_H
 #define WFC_H
 
-#include "engine/generators/interface/step_generator.h"
+#include "engine/generators/IStepGenerator.h"
 #include "models/hexmap.h"
 #include "models/cell.h"
 #include "engine/rules.h"
@@ -9,7 +9,7 @@
 
 #include <random>
 
-class WFC : public StepGenerator {
+class WFC : public IStepGenerator {
 private:
 
     HexMap& hex_map;

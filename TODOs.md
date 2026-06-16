@@ -1,5 +1,8 @@
 # Main TO-DOs
 
+## Isolated features
+- TODO - Implement sandbox configs in menu/config
+
 ## Rules
 - TODO - Implement new types of tiles
 - TODO - Setup the relation between tiles and their color

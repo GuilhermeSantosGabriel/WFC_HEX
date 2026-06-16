@@ -1,4 +1,4 @@
-#include "engine/render/render.h"
+#include "engine/render/simulation_runner.h"
 
 #include <iostream>
 
@@ -74,7 +74,7 @@ void run_step_visual_simulation(
     HexRenderer& hex_renderer,
     unsigned int step_counter,
     HexMap& hex_map,
-    StepGenerator& step_generator,
+    IStepGenerator& step_generator,
     double visual_start_timestamp,
     Camera& camera,
     bool persist_after_generator_finished

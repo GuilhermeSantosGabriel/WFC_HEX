@@ -1,4 +1,4 @@
-#include "engine/render/render.h"
+#include "engine/render/window_manager.h"
 
 #include <stdexcept>
 #include <iostream>
@@ -20,8 +20,8 @@ GLFWwindow* setup_window() {
     }
 
     // Sets GLWF up with OpenGL
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     // MSAA to reduce flickering
     glfwWindowHint(GLFW_SAMPLES, 4);
