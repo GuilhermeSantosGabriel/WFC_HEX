@@ -69,7 +69,6 @@ Steps to run:
 - **make**: Compiles the main application.
 - **make run**: Compiles and runs the simulation with default parameters.
 - **make headless**: Runs the generation without the OpenGL window (ideal for batch processing).
-- **make test**: (!Deprecated!) Testing suite is currently suspended due to core architecture refactoring.
 - **make help**: Displays a detailed list of all available commands and variables.
 
 ### CLI Configuration

@@ -1,12 +1,12 @@
 #ifndef RIVER_GENERATOR_H
 #define RIVER_GENERATOR_H
 
-#include "engine/generators/interface/step_generator.h"
+#include "engine/generators/IStepGenerator.h"
 #include "engine/noises/INoise.h"
 #include "models/hexmap.h"
 
 
-class RiverGenerator : public StepGenerator {
+class RiverGenerator : public IStepGenerator {
 private:
 
     HexMap& hex_map;

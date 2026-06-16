@@ -1,4 +1,4 @@
-#include "engine/render/render.h"
+#include "engine/render/hex_renderer.h"
 #include "engine/rules.h"
 
 #include <algorithm>
@@ -8,11 +8,11 @@
 std::array<glm::vec2, HexRenderer::VERTICES_PER_HEX> HexRenderer::hex_vertices_offset_from_hex_center;
 
 constexpr const char* vertexShaderSource = R"glsl(
-    #version 450 core
+    #version 330 core
     layout(location = 0) in vec3 aPosition;
     layout(location = 1) in vec3 aNormal;
 
-    layout(location = 0) uniform mat4 uProjection;
+    uniform mat4 uProjection;
 
     out vec3 fragmentPosition;
     out vec3 fragmentNormal;
@@ -25,18 +25,18 @@ constexpr const char* vertexShaderSource = R"glsl(
 )glsl";
 
 constexpr const char* fragmentShaderSource = R"glsl(
-    #version 450 core
-    layout(location = 1) uniform vec3 uViewPosition;
-    layout(location = 2) uniform vec3 uSunDirection;
-    layout(location = 3) uniform vec3 uColor;
-    layout(location = 4) uniform bool uUseLighting;
-    layout(location = 5) uniform float uLightAmbientIntensity;
-    layout(location = 6) uniform float uLightDiffuseIntensity;
-    layout(location = 7) uniform float uLightSpecularIntensity;
-    layout(location = 8) uniform vec3 uMaterialAmbientColor;
-    layout(location = 9) uniform vec3 uMaterialDiffuseColor;
-    layout(location = 10) uniform vec3 uMaterialSpecularColor;
-    layout(location = 11) uniform float uMaterialShininess;
+    #version 330 core
+    uniform vec3 uViewPosition;
+    uniform vec3 uSunDirection;
+    uniform vec3 uColor;
+    uniform bool uUseLighting;
+    uniform float uLightAmbientIntensity;
+    uniform float uLightDiffuseIntensity;
+    uniform float uLightSpecularIntensity;
+    uniform vec3 uMaterialAmbientColor;
+    uniform vec3 uMaterialDiffuseColor;
+    uniform vec3 uMaterialSpecularColor;
+    uniform float uMaterialShininess;
 
     in vec3 fragmentPosition;
     // Fragment's face's normal vector. Vector is the same for all fragments in
@@ -264,6 +264,7 @@ void HexRenderer::setup_geometry() {
     constexpr GLint FLOATS_PER_VERTEX = POSITION_ELEMENT_COUNT + NORMAL_ELEMENT_COUNT;
     constexpr GLint VERTEX_SIZE = FLOATS_PER_VERTEX * sizeof(float);
 
+    // const GLint aPosition_location = glGetAttribLocation(shader_program, "aPosition");
     constexpr GLint aPosition_location = 0;
     glVertexAttribPointer(
         aPosition_location,
@@ -275,6 +276,7 @@ void HexRenderer::setup_geometry() {
     );
     glEnableVertexAttribArray(aPosition_location);
 
+    // const GLint aNormal_location = glGetAttribLocation(shader_program, "aNormal");
     constexpr GLint aNormal_location = 1;
     glVertexAttribPointer(
         aNormal_location,
@@ -503,10 +505,10 @@ void HexRenderer::draw_hex_map_frame(
     perspective_matrix[1][1] *= -1.0f;
 
     const glm::mat4 projection = perspective_matrix * camera.view_matrix();
-    constexpr GLint uProjection_location = 0;
+    const GLint uProjection_location = glGetUniformLocation(shader_program, "uProjection");
     glUniformMatrix4fv(uProjection_location, 1, GL_FALSE, &projection[0][0]);
 
-    constexpr GLint uViewPosition_location = 1;
+    const GLint uViewPosition_location = glGetUniformLocation(shader_program, "uViewPosition");
     glUniform3f(uViewPosition_location, camera.position.x, camera.position.y, camera.position.z);
 
     constexpr float SUN_ROTATION_SPEED_DEGREES_PER_SECOND = 36.0f;
@@ -526,16 +528,16 @@ void HexRenderer::draw_hex_map_frame(
     const glm::vec3 sun_direction = glm::normalize(
         glm::vec3(sun_rotation_matrix * glm::vec4(initial_sun_direction, 0.0f))
     );
-    constexpr GLint uSunDirection_location = 2;
+    const GLint uSunDirection_location = glGetUniformLocation(shader_program, "uSunDirection");
     glUniform3f(uSunDirection_location, sun_direction.x, sun_direction.y, sun_direction.z);
 
-    constexpr GLint uLightAmbientIntensity_location = 5;
+    const GLint uLightAmbientIntensity_location = glGetUniformLocation(shader_program, "uLightAmbientIntensity");
     glUniform1f(uLightAmbientIntensity_location, 0.38f);
 
-    constexpr GLint uLightDiffuseIntensity_location = 6;
+    const GLint uLightDiffuseIntensity_location = glGetUniformLocation(shader_program, "uLightDiffuseIntensity");
     glUniform1f(uLightDiffuseIntensity_location, 0.42f);
 
-    constexpr GLint uLightSpecularIntensity_location = 7;
+    const GLint uLightSpecularIntensity_location = glGetUniformLocation(shader_program, "uLightSpecularIntensity");
     glUniform1f(uLightSpecularIntensity_location, 0.35f);
 
     glBindVertexArray(VAO);
@@ -555,7 +557,7 @@ void HexRenderer::draw_hex_map_frame(
         const Material cell_material = tile_material(cell_tile);
 
 
-        constexpr GLint uMaterialAmbientColor_location = 8;
+        const GLint uMaterialAmbientColor_location = glGetUniformLocation(shader_program, "uMaterialAmbientColor");
         glUniform3f(
             uMaterialAmbientColor_location,
             cell_material.color_ambient.x,
@@ -563,7 +565,7 @@ void HexRenderer::draw_hex_map_frame(
             cell_material.color_ambient.z
         );
 
-        constexpr GLint uMaterialDiffuseColor_location = 9;
+        const GLint uMaterialDiffuseColor_location = glGetUniformLocation(shader_program, "uMaterialDiffuseColor");
         glUniform3f(
             uMaterialDiffuseColor_location,
             cell_material.color_diffuse.x,
@@ -571,7 +573,7 @@ void HexRenderer::draw_hex_map_frame(
             cell_material.color_diffuse.z
         );
 
-        constexpr GLint uMaterialSpecularColor_location = 10;
+        const GLint uMaterialSpecularColor_location = glGetUniformLocation(shader_program, "uMaterialSpecularColor");
         glUniform3f(
             uMaterialSpecularColor_location,
             cell_material.color_specular.x,
@@ -579,13 +581,13 @@ void HexRenderer::draw_hex_map_frame(
             cell_material.color_specular.z
         );
 
-        constexpr GLint uMaterialShininess_location = 11;
+        const GLint uMaterialShininess_location = glGetUniformLocation(shader_program, "uMaterialShininess");
         glUniform1f(
             uMaterialShininess_location,
             cell_material.shininess
         );
 
-        constexpr GLint uUseLighting_location = 4;
+        const GLint uUseLighting_location = glGetUniformLocation(shader_program, "uUseLighting");
         // Enable lighting for prism triangles
         glUniform1i(uUseLighting_location, GL_TRUE);
 
@@ -619,7 +621,7 @@ void HexRenderer::draw_hex_map_frame(
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
         glDrawArrays(GL_TRIANGLES, 0, LIT_VERTEX_INDICES_PER_CELL);
 
-        constexpr GLint uColor_location = 3;
+        const GLint uColor_location = glGetUniformLocation(shader_program, "uColor");
         constexpr glm::vec3 OUTLINE_COLOR = {0.0f, 0.0f, 0.0f};
         glUniform3f(uColor_location, OUTLINE_COLOR.x, OUTLINE_COLOR.y, OUTLINE_COLOR.z);
 
@@ -648,10 +650,10 @@ void HexRenderer::draw_hex_map_frame(
         glDepthFunc(gl_depth_func_previous);
     }
 
-    constexpr GLint uUseLighting_location = 4;
+    const GLint uUseLighting_location = glGetUniformLocation(shader_program, "uUseLighting");
     glUniform1i(uUseLighting_location, GL_FALSE);
 
-    constexpr GLint uColor_location = 3;
+    const GLint uColor_location = glGetUniformLocation(shader_program, "uColor");
     constexpr glm::vec3 SUN_COLOR = {1.0f, 0.86f, 0.22f};
     glUniform3f(uColor_location, SUN_COLOR.x, SUN_COLOR.y, SUN_COLOR.z);
 
