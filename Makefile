@@ -22,6 +22,8 @@ INC_DIR      := $(ROOT_DIR)/include
 EXTERNAL_DIR := $(ROOT_DIR)/external
 BIN_DIR      := bin
 OBJ_DIR      := obj
+ASSETS_DIR   := assets
+BIN_ASSETS   := $(BIN_DIR)/assets
 INCLUDES     := -I$(ROOT_DIR) \
                 -I$(INC_DIR) \
                 -I$(EXTERNAL_DIR) \
@@ -55,12 +57,19 @@ args   ?=
 # --- Primary Targets ---
 TARGET = $(BIN_DIR)/wfc
 
-all: $(TARGET)
+all: $(TARGET) copy-assets
 
 $(TARGET): $(CORE_OBJS) $(MAIN_OBJ)
 	@mkdir -p $(BIN_DIR)
 	$(CXX) $(CXXFLAGS) $^ -o $@ $(LIBS)
 	@echo "Build successful: $(TARGET)"
+
+copy-assets:
+	@if [ -d "$(ASSETS_DIR)" ]; then \
+		mkdir -p $(BIN_ASSETS); \
+		cp -r $(ASSETS_DIR)/* $(BIN_ASSETS)/; \
+		echo "Assets updated in $(BIN_ASSETS)"; \
+	fi
 
 # --- Compilation Rules ---
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
