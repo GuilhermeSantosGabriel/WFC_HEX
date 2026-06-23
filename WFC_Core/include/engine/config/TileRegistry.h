@@ -47,6 +47,72 @@ public:
 };
 
 class TileRegistry {
+
+private:
+
+    static json openJsonFile(std::string config_path) {
+        std::ifstream file(config_path);
+        if (!file.is_open()) {
+            throw std::runtime_error("CRITICAL: Unable to open config file at " + config_path);
+        }
+        json data = json::parse(file);
+
+        return data;
+    }
+
+    static void validateJsonData(json data) {
+        if (!data.contains("tiles")) {
+            throw std::runtime_error("CRITICAL: Invalid JSON format. Root object must contain a 'tiles'.");
+        }
+    }
+
+    static TileConfig configFromJson(
+        std::string key,
+        nlohmann::json_abi_v3_12_0::json value,
+        json full_data
+    ) {
+
+        try {
+            unsigned int id = std::stoul(key);
+
+            unsigned int r = value["r"].get<unsigned int>();
+            unsigned int g = value["g"].get<unsigned int>();
+            unsigned int b = value["b"].get<unsigned int>();
+            unsigned int a = value["a"].get<unsigned int>();
+
+            float hb = value["height_base"].get<float>();
+            float ha = value["height_amplitude"].get<float>();
+
+            std::map<unsigned int,unsigned int> neighbors;
+            for (auto& [n_key, n_value] : value["neighbors"].items()) {
+
+                if (!full_data["tiles"].contains(n_key)) {
+                    throw std::runtime_error(
+                        "CRITICAL: Neighbor " + n_key +
+                        " not configured in tiles."
+                    );
+                }
+
+                unsigned int neighbor_id = std::stoul(n_key);
+                unsigned int neighbor_weight = n_value.get<unsigned int>();
+
+                neighbors[neighbor_id] = neighbor_weight;
+            }
+
+            return TileConfig(
+                id,
+                r, g, b, a,
+                hb, ha,
+                neighbors
+            );
+        }
+
+        catch(const std::exception& e) {
+            std::cerr << "Error parsing tile " << key << ": " << e.what() << std::endl;
+            throw;
+        }
+    }
+
 public:
 
     std::map<unsigned int, TileConfig> config_map;
@@ -57,66 +123,27 @@ public:
 
         // Reads the Tile Configuration JSON file
         std::string config_path = "assets/tile_registry.json"; 
-        std::ifstream file(config_path);
-        if (!file.is_open()) {
-            throw std::runtime_error("CRITICAL: Unable to open config file at " + config_path);
-        }
-        json data = json::parse(file);
+        json data = TileRegistry::openJsonFile(config_path);
 
         // Validation - must contain 'tiles' dict in root
-        if (!data.contains("tiles")) {
-            throw std::runtime_error("CRITICAL: Invalid JSON format. Root object must contain a 'tiles'.");
-        }
+        TileRegistry::validateJsonData(data);
 
         std::map<int, TileConfig> config_map;
         for (auto& [key, value] : data["tiles"].items()) {
 
-            try {
-                unsigned int id = std::stoul(key);
+            TileConfig aux = TileRegistry::configFromJson(
+                key, value, data
+            );
 
-                unsigned int r = value["r"].get<unsigned int>();
-                unsigned int g = value["g"].get<unsigned int>();
-                unsigned int b = value["b"].get<unsigned int>();
-                unsigned int a = value["a"].get<unsigned int>();
-
-                float hb = value["height_base"].get<float>();
-                float ha = value["height_amplitude"].get<float>();
-
-                std::map<unsigned int,unsigned int> neighbors;
-                for (auto& [n_key, n_value] : value["neighbors"].items()) {
-
-                    if (!data["tiles"].contains(n_key)) {
-                        throw std::runtime_error(
-                            "CRITICAL: Neighbor " + n_key +
-                            " not configured in tiles."
-                        );
-                    }
-
-                    unsigned int neighbor_id = std::stoul(n_key);
-                    unsigned int neighbor_weight = n_value.get<unsigned int>();
-
-                    neighbors[neighbor_id] = neighbor_weight;
-                }
-
-                registry.config_map.emplace(
-                    id,
-                    TileConfig(
-                        id,
-                        r, g, b, a,
-                        hb, ha,
-                        neighbors
-                    )
-                );
-            }
-
-            catch(const std::exception& e) {
-                std::cerr << "Error parsing tile " << key << ": " << e.what() << std::endl;
-                throw;
-            }
-
-            return registry;
+            registry.config_map.emplace(
+                aux.id, aux
+            );
         }
-    };
+
+        return registry;
+    }
 };
 
 #endif
+
+// TODO - implement better class organization in a new .cpp file

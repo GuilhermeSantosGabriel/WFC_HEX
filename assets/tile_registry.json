@@ -1,32 +1,32 @@
 {
     "tiles": {
-        "id1": {
+        "1": {
             "r": 100, "g": 180, "b": 255, "a": 255,
             "height_base": 0,
             "height_amplitude": 300,
             "neighbors": {
-                "id1": 4,
-                "id2": 3,
-                "id3": 3
+                "1": 4,
+                "2": 3,
+                "3": 3
             }
         },
-        "id2": {
+        "2": {
             "r": 200, "g": 100, "b": 130, "a": 255,
             "height_base": 20,
             "height_amplitude": 100,
             "neighbors": {
-                "id2": 9,
-                "id3": 1
+                "2": 9,
+                "3": 1
             }
         },
-        "id3": {
+        "3": {
             "r": 128, "g": 128, "b": 255, "a": 255,
             "height_base": 0,
             "height_amplitude": 132,
             "neighbors": {
-                "id1": 4,
-                "id2": 1,
-                "id3": 5
+                "1": 4,
+                "2": 1,
+                "3": 5
             }
         }
     }
