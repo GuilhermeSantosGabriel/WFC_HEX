@@ -1,11 +1,12 @@
-#ifndef TILE_REGISTR_H
-#define TILE_REGISTR_H
+#ifndef TILE_REGISTRY_H
+#define TILE_REGISTRY_H
 
 #include <cstdint>
 #include <cassert>
 #include <map>
 #include <fstream>
 #include <stdexcept>
+#include <iostream>
 #include "external/nlohmann/json.hpp"
 using json = nlohmann::json;
 
@@ -48,62 +49,72 @@ public:
 class TileRegistry {
 public:
 
-    std::map<int, TileConfig> config_map;
+    std::map<unsigned int, TileConfig> config_map;
 
-    // TODO - implement TileRegistry fromJson
     static TileRegistry fromJson() {
 
         TileRegistry registry;
 
+        // Reads the Tile Configuration JSON file
         std::string config_path = "assets/tile_registry.json"; 
         std::ifstream file(config_path);
         if (!file.is_open()) {
             throw std::runtime_error("CRITICAL: Unable to open config file at " + config_path);
         }
-
         json data = json::parse(file);
 
+        // Validation - must contain 'tiles' dict in root
         if (!data.contains("tiles")) {
             throw std::runtime_error("CRITICAL: Invalid JSON format. Root object must contain a 'tiles'.");
         }
 
-        json available_tiles_ids = json::array();
-        for (auto it = data["tiles"].begin(); it != data["tiles"].end(); ++it) {
-            available_tiles_ids.push_back(it.key());
-        }
-
+        std::map<int, TileConfig> config_map;
         for (auto& [key, value] : data["tiles"].items()) {
 
             try {
-                unsigned int id = int(&key);
+                unsigned int id = std::stoul(key);
 
-                unsigned int r = value['r'];
-                unsigned int g = value['g'];
-                unsigned int b = value['b'];
-                unsigned int a = value['a'];
+                unsigned int r = value["r"].get<unsigned int>();
+                unsigned int g = value["g"].get<unsigned int>();
+                unsigned int b = value["b"].get<unsigned int>();
+                unsigned int a = value["a"].get<unsigned int>();
 
-                float hb = value['height_base'];
-                float ha = value['height_amplitude'];
+                float hb = value["height_base"].get<float>();
+                float ha = value["height_amplitude"].get<float>();
 
-                std::map<unsigned int,unsigned int> n;
+                std::map<unsigned int,unsigned int> neighbors;
                 for (auto& [n_key, n_value] : value["neighbors"].items()) {
-                    if (!available_tiles_ids.contains(n_key)) {
+
+                    if (!data["tiles"].contains(n_key)) {
                         throw std::runtime_error(
-                            "CRITICAL: Invalid JSON format. Neighbor tile" +
-                            n_key + " inside of tile " + n_value +
-                            " not configured"
+                            "CRITICAL: Neighbor " + n_key +
+                            " not configured in tiles."
                         );
                     }
-                    // TODO - continue here
+
+                    unsigned int neighbor_id = std::stoul(n_key);
+                    unsigned int neighbor_weight = n_value.get<unsigned int>();
+
+                    neighbors[neighbor_id] = neighbor_weight;
                 }
 
-                TileConfig tile_config_aux(
-                    
+                registry.config_map.emplace(
+                    id,
+                    TileConfig(
+                        id,
+                        r, g, b, a,
+                        hb, ha,
+                        neighbors
+                    )
                 );
             }
-            catch(const std::exception& e) {
 
+            catch(const std::exception& e) {
+                std::cerr << "Error parsing tile " << key << ": " << e.what() << std::endl;
+                throw;
             }
+
+            return registry;
         }
     };
 };
