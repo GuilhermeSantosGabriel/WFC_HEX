@@ -6,6 +6,7 @@
 #include "engine/render/window_manager.h"
 
 #include "engine/config/EngineConfig.h"
+#include "engine/config/TileRegistry.h"
 #include "engine/rules.h"
 #include "menu/menu.h"
 #include "engine/hex_to_pixels.h"
@@ -23,12 +24,15 @@ int main(int argc, char *argv[]) {
     // - Seeds
     EngineConfig config = EngineConfig::from_cli(argc, argv);
 
+    // Deals with Tiles Configs
+    TileRegistry tile_registry = TileRegistry::fromJson();
+
     // Validate generation rules
     validate_constraints();
 
     GLFWwindow* window = setup_window();
     if (config.open_menu) {
-        open_config_menu(window, &config);
+        open_config_menu(window, &config, &tile_registry);
     }
 
     // Creates an empty HexMap

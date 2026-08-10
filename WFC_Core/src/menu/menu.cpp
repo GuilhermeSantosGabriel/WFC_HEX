@@ -1,10 +1,12 @@
+#include <string> 
+
 #include "menu/menu.h"
 #include "external/imgui/imgui.h"
 #include "external/imgui/imgui_impl_glfw.h"
 #include "external/imgui/imgui_impl_opengl3.h"
 
 
-void open_config_menu(GLFWwindow* window, EngineConfig* config) {
+void open_config_menu(GLFWwindow* window, EngineConfig* config, TileRegistry* tile_registry) {
 
     glfwSetCursorPosCallback(window, nullptr);
     glfwSetMouseButtonCallback(window, nullptr);
@@ -64,12 +66,28 @@ void open_config_menu(GLFWwindow* window, EngineConfig* config) {
         ImGui::Separator();
         ImGui::Spacing();
 
+        for (auto& [id, tile_config] : tile_registry->config_map) {
+
+            ImGui::DragScalar(
+                "Red", ImGuiDataType_U32, &tile_config.r
+            );
+
+            ImGui::Spacing();
+            ImGui::Separator();
+            ImGui::Spacing();
+        }
+
+        ImGui::Spacing();
+        ImGui::Separator();
+        ImGui::Spacing();
+
         float button_w = 400, button_h = 40;
         float center_x_pos = (ImGui::GetWindowWidth() - button_w) * 0.5f;
         ImGui::SetCursorPosX(center_x_pos);
         if (ImGui::Button("Generate", ImVec2(button_w, button_h))) {
             config_done = true;
         }
+
         ImGui::End();
 
         ImGui::Render();
